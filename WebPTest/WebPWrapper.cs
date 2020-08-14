@@ -61,8 +61,19 @@ namespace WebPWrapper
 
             try
             {
+
+                int imgWidth;
+
+                int imgHeight;
+
+                bool hasAlpha;
+
+                bool hasAnimation;
+
+                string format;
+
                 //Get image width and height
-                GetInfo(rawWebP, out int imgWidth, out int imgHeight, out bool hasAlpha, out bool hasAnimation, out string format);
+                GetInfo(rawWebP, out imgWidth, out imgHeight, out hasAlpha, out hasAnimation, out format);
 
                 //Create a BitmapData and Lock all pixels to be written
                 if (hasAlpha)
@@ -277,8 +288,8 @@ namespace WebPWrapper
 
                 IntPtr ptrRawWebP = pinnedWebP.AddrOfPinnedObject();
                 VP8StatusCode result = UnsafeNativeMethods.WebPGetFeatures(ptrRawWebP, rawWebP.Length, ref config.input);
-                    if (result != VP8StatusCode.VP8_STATUS_OK)
-                        throw new Exception("Failed WebPGetFeatures with error " + result);
+                if (result != VP8StatusCode.VP8_STATUS_OK)
+                    throw new Exception("Failed WebPGetFeatures with error " + result);
 
                 // Set up decode options
                 config.options.bypass_filtering = 0;
@@ -785,7 +796,7 @@ namespace WebPWrapper
 
                 if (dataWebpSize > 2147483591)
                     dataWebpSize = 2147483591;
-                dataWebp = new byte[bmp.Width * bmp.Height * 32];                
+                dataWebp = new byte[bmp.Width * bmp.Height * 32];
                 pinnedArrayHandle = GCHandle.Alloc(dataWebp, GCHandleType.Pinned);
                 IntPtr initPtr = pinnedArrayHandle.AddrOfPinnedObject();
                 wpic.custom_ptr = initPtr;
@@ -1598,7 +1609,7 @@ namespace WebPWrapper
         /// <summary>If non-zero, specifies the minimal distortion to try to achieve. Takes precedence over target_size.</summary>
         public float target_PSNR;
         /// <summary>Maximum number of segments to use, in [1..4]</summary>
-        public int segments;    
+        public int segments;
         /// <summary>Spatial Noise Shaping. 0=off, 100=maximum.</summary>
         public int sns_strength;
         /// <summary>Range: [0 = off .. 100 = strongest]</summary>
@@ -1608,31 +1619,31 @@ namespace WebPWrapper
         /// <summary>Filtering type: 0 = simple, 1 = strong (only used if filter_strength > 0 or autofilter > 0)</summary>
         public int filter_type;
         /// <summary>Auto adjust filter's strength [0 = off, 1 = on]</summary>
-        public int autofilter; 
+        public int autofilter;
         /// <summary>Algorithm for encoding the alpha plane (0 = none, 1 = compressed with WebP lossless). Default is 1.</summary>
         public int alpha_compression;
         /// <summary>Predictive filtering method for alpha plane. 0: none, 1: fast, 2: best. Default if 1.</summary>
-        public int alpha_filtering;  
+        public int alpha_filtering;
         /// <summary>Between 0 (smallest size) and 100 (lossless). Default is 100.</summary>
-        public int alpha_quality;    
+        public int alpha_quality;
         /// <summary>Number of entropy-analysis passes (in [1..10]).</summary>
-        public int pass;             
+        public int pass;
         /// <summary>If true, export the compressed picture back. In-loop filtering is not applied.</summary>
         public int show_compressed;
         /// <summary>Preprocessing filter (0=none, 1=segment-smooth, 2=pseudo-random dithering)</summary>
-        public int preprocessing;    
+        public int preprocessing;
         /// <summary>Log2(number of token partitions) in [0..3] Default is set to 0 for easier progressive decoding.</summary>
-        public int partitions;       
+        public int partitions;
         /// <summary>Quality degradation allowed to fit the 512k limit on prediction modes coding (0: no degradation, 100: maximum possible degradation).</summary>
         public int partition_limit;
         /// <summary>If true, compression parameters will be remapped to better match the expected output size from JPEG compression. Generally, the output size will be similar but the degradation will be lower.</summary>
-        public int emulate_jpeg_size;  
+        public int emulate_jpeg_size;
         /// <summary>If non-zero, try and use multi-threaded encoding.</summary>
-        public int thread_level;       
+        public int thread_level;
         /// <summary>If set, reduce memory usage (but increase CPU use).</summary>
         public int low_memory;
         /// <summary>Near lossless encoding [0 = max loss .. 100 = off (default)].</summary>
-        public int near_lossless;      
+        public int near_lossless;
         /// <summary>If non-zero, preserve the exact RGB values under transparent area. Otherwise, discard this invisible RGB information for better compression. The default value is 0.</summary>
         public int exact;
         /// <summary>Reserved for future lossless feature</summary>
@@ -1657,9 +1668,9 @@ namespace WebPWrapper
         /// <summary>Height of picture (less or equal to WEBP_MAX_DIMENSION)</summary>
         public int height;
         /// <summary>Pointer to luma plane.</summary>
-        public IntPtr y;    
+        public IntPtr y;
         /// <summary>Pointer to chroma U plane.</summary>
-        public IntPtr u;    
+        public IntPtr u;
         /// <summary>Pointer to chroma V plane.</summary>
         public IntPtr v;
         /// <summary>Luma stride.</summary>
@@ -1669,19 +1680,19 @@ namespace WebPWrapper
         /// <summary>Pointer to the alpha plane</summary>
         public IntPtr a;
         /// <summary>stride of the alpha plane</summary>
-        public int a_stride; 
+        public int a_stride;
         /// <summary>Padding for later use.</summary>
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.U4)]
         private readonly uint[] pad1;
         /// <summary>Pointer to argb (32 bit) plane.</summary>
-        public IntPtr argb;    
+        public IntPtr argb;
         /// <summary>This is stride in pixels units, not bytes.</summary>
         public int argb_stride;
         /// <summary>Padding for later use.</summary>
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3, ArraySubType = UnmanagedType.U4)]
         private readonly uint[] pad2;
         /// <summary>Byte-emission hook, to store compressed bytes as they are ready.</summary>
-        public IntPtr writer;  
+        public IntPtr writer;
         /// <summary>Can be used by the writer.</summary>
         public IntPtr custom_ptr;
         // map for extra information (only for lossy compression mode)
@@ -1690,18 +1701,18 @@ namespace WebPWrapper
         /// <summary>if not NULL, points to an array of size ((width + 15) / 16) * ((height + 15) / 16) that will be filled with a macroblock map, depending on extra_info_type.</summary>
         public IntPtr extra_info;
         /// <summary>Pointer to side statistics (updated only if not NULL)</summary>
-        public IntPtr stats;        
+        public IntPtr stats;
         /// <summary>Error code for the latest error encountered during encoding</summary>
-        public UInt32 error_code;   
+        public UInt32 error_code;
         /// <summary>If not NULL, report progress during encoding.</summary>
         public IntPtr progress_hook;
         /// <summary>this field is free to be set to any value and used during callbacks (like progress-report e.g.).</summary>
-        public IntPtr user_data;  
+        public IntPtr user_data;
         /// <summary>Padding for later use.</summary>
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 13, ArraySubType = UnmanagedType.U4)]
         private readonly uint[] pad3;
         /// <summary>Row chunk of memory for yuva planes</summary>
-        private readonly IntPtr memory_;     
+        private readonly IntPtr memory_;
         /// <summary>row chunk of memory for argb planes</summary>
         private readonly IntPtr memory_argb_;
         /// <summary>Padding for later use.</summary>
@@ -1719,9 +1730,9 @@ namespace WebPWrapper
     public struct WebPAuxStats
     {
         /// <summary>Final size</summary>
-        public int coded_size;                 
+        public int coded_size;
         /// <summary>Peak-signal-to-noise ratio for Y</summary>
-        public float PSNRY;                    
+        public float PSNRY;
         /// <summary>Peak-signal-to-noise ratio for U</summary>
         public float PSNRU;
         /// <summary>Peak-signal-to-noise ratio for V</summary>
@@ -1729,13 +1740,13 @@ namespace WebPWrapper
         /// <summary>Peak-signal-to-noise ratio for All</summary>
         public float PSNRALL;
         /// <summary>Peak-signal-to-noise ratio for Alpha</summary>
-        public float PSNRAlpha;                
+        public float PSNRAlpha;
         /// <summary>Number of intra4</summary>
         public int block_count_intra4;
         /// <summary>Number of intra16</summary>
         public int block_count_intra16;
         /// <summary>Number of skipped macroblocks</summary>
-        public int block_count_skipped;        
+        public int block_count_skipped;
         /// <summary>Approximate number of bytes spent for header</summary>
         public int header_bytes;
         /// <summary>Approximate number of bytes spent for  mode-partition #0</summary>
@@ -1765,13 +1776,13 @@ namespace WebPWrapper
         /// <summary>Approximate number of bytes spent for uv coefficients for segment 3.</summary>
         public int residual_bytes_uv_segments3;
         /// <summary>Number of macroblocks in segments 0</summary>
-        public int segment_size_segments0; 
+        public int segment_size_segments0;
         /// <summary>Number of macroblocks in segments 1</summary>
-        public int segment_size_segments1; 
+        public int segment_size_segments1;
         /// <summary>Number of macroblocks in segments 2</summary>
-        public int segment_size_segments2; 
+        public int segment_size_segments2;
         /// <summary>Number of macroblocks in segments 3</summary>
-        public int segment_size_segments3; 
+        public int segment_size_segments3;
         /// <summary>Quantizer values for segment 0</summary>
         public int segment_quant_segments0;
         /// <summary>Quantizer values for segment 1</summary>
@@ -1791,23 +1802,23 @@ namespace WebPWrapper
         /// <summary>Size of the transparency data</summary>
         public int alpha_data_size;
         /// <summary>Size of the enhancement layer data</summary>
-        public int layer_data_size;   
+        public int layer_data_size;
 
         // lossless encoder statistics
         /// <summary>bit0:predictor bit1:cross-color transform bit2:subtract-green bit3:color indexing</summary>
         public Int32 lossless_features;
         /// <summary>Number of precision bits of histogram</summary>
-        public int histogram_bits;     
+        public int histogram_bits;
         /// <summary>Precision bits for transform</summary>
-        public int transform_bits;     
+        public int transform_bits;
         /// <summary>Number of bits for color cache lookup</summary>
-        public int cache_bits;         
+        public int cache_bits;
         /// <summary>Number of color in palette, if used</summary>
-        public int palette_size;       
+        public int palette_size;
         /// <summary>Final lossless size</summary>
-        public int lossless_size;      
+        public int lossless_size;
         /// <summary>Lossless header (transform, huffman etc) size</summary>
-        public int lossless_hdr_size;  
+        public int lossless_hdr_size;
         /// <summary>Lossless image data size</summary>
         public int lossless_data_size;
         /// <summary>Padding for later use.</summary>
