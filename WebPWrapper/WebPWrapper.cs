@@ -27,7 +27,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Windows.Forms;
+//using System.Windows.Forms;
 
 namespace WebPWrapper
 {
@@ -407,7 +407,7 @@ namespace WebPWrapper
         /// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
         /// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
         /// <returns>Compressed data</returns>
-        public byte[] EncodeLossy(Bitmap bmp, int quality, int speed, bool info = false)
+        public byte[] EncodeLossy(Bitmap bmp, int quality, int speed, bool info, out WebPAuxStats stats)
         {
             //Inicialize config struct
             WebPConfig config = new WebPConfig();
@@ -438,7 +438,7 @@ namespace WebPWrapper
             else
                 config.preprocessing = 3;
 
-            return AdvancedEncode(bmp, config, info);
+            return AdvancedEncode(bmp, config, info, out stats);
         }
 
         /// <summary>Lossless encoding bitmap to WebP (Simple encoding API)</summary>
@@ -520,7 +520,8 @@ namespace WebPWrapper
             config.use_sharp_yuv = 1;
             config.exact = 0;
 
-            return AdvancedEncode(bmp, config, false);
+			WebPAuxStats stats;
+            return AdvancedEncode(bmp, config, false, out stats);
         }
 
         /// <summary>Near lossless encoding image in bitmap</summary>
@@ -549,7 +550,8 @@ namespace WebPWrapper
             config.use_sharp_yuv = 1;
             config.exact = 0;
 
-            return AdvancedEncode(bmp, config, false);
+			WebPAuxStats stats;
+            return AdvancedEncode(bmp, config, false, out stats);
         }
         #endregion
 
@@ -720,13 +722,12 @@ namespace WebPWrapper
         /// <param name="config">Config for encode</param>
         /// <param name="info">True if need encode info.</param>
         /// <returns>Compressed data</returns>
-        private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info)
+        private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info, out WebPAuxStats stats)
         {
             byte[] rawWebP = null;
             byte[] dataWebp = null;
             WebPPicture wpic = new WebPPicture();
             BitmapData bmpData = null;
-            WebPAuxStats stats = new WebPAuxStats();
             IntPtr ptrStats = IntPtr.Zero;
             GCHandle pinnedArrayHandle = new GCHandle();
             int dataWebpSize;
@@ -814,10 +815,10 @@ namespace WebPWrapper
                 pinnedArrayHandle.Free();
                 dataWebp = null;
 
-                //Show statistics
-                if (info)
-                {
-                    stats = (WebPAuxStats)Marshal.PtrToStructure(ptrStats, typeof(WebPAuxStats));
+				//Show statistics
+				if (info) {
+					stats = (WebPAuxStats)Marshal.PtrToStructure(ptrStats, typeof(WebPAuxStats));
+					/*
                     MessageBox.Show("Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
                                     "Output:    " + stats.coded_size + " bytes\n" +
                                     "PSNR Y:    " + stats.PSNRY + " db\n" +
@@ -841,7 +842,10 @@ namespace WebPWrapper
                                     "Filter level 1: " + stats.segment_level_segments1 + " residuals bytes\n" +
                                     "Filter level 2: " + stats.segment_level_segments2 + " residuals bytes\n" +
                                     "Filter level 3: " + stats.segment_level_segments3 + " residuals bytes\n", "Compression statistics");
-                }
+									// */
+				} else {
+					stats = new WebPAuxStats();
+				}
 
                 return rawWebP;
             }

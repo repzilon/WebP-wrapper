@@ -170,8 +170,10 @@ namespace WebPTest
 
                 //Test encode lossly mode in memory with quality 75 and speed 9
                 string advanceLossyFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AdvanceLossy.webp");
-                using (WebP webp = new WebP())
-                    rawWebP = webp.EncodeLossy(bmp, 71, 9, true);
+				using (WebP webp = new WebP()) {
+					WebPAuxStats lossyStats;
+					rawWebP = webp.EncodeLossy(bmp, 71, 9, true, out lossyStats);
+				}
                 File.WriteAllBytes(advanceLossyFileName, rawWebP);
                 MessageBox.Show("Made " + advanceLossyFileName, "Advance lossy");
 
