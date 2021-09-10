@@ -40,13 +40,7 @@ namespace WebPWrapper
         /// <returns>Bitmap with the WebP image</returns>
         public Bitmap Load(string pathFileName)
         {
-            try
-            {
-                byte[] rawWebP = File.ReadAllBytes(pathFileName);
-
-                return Decode(rawWebP);
-            }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Load"); }
+			return this.Decode(File.ReadAllBytes(pathFileName));
         }
 
         /// <summary>Decode a WebP image</summary>
@@ -83,7 +77,6 @@ namespace WebPWrapper
 
                 return bmp;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Decode"); }
             finally
             {
                 //Unlock the pixels
@@ -184,7 +177,6 @@ namespace WebPWrapper
 
                 return bmp;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Decode"); }
             finally
             {
                 //Unlock the pixels
@@ -245,7 +237,6 @@ namespace WebPWrapper
 
                 return bmp;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Thumbnail"); }
             finally
             {
                 //Unlock the pixels
@@ -318,7 +309,6 @@ namespace WebPWrapper
 
                 return bmp;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Thumbnail"); }
             finally
             {
                 //Unlock the pixels
@@ -339,17 +329,8 @@ namespace WebPWrapper
         /// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
         public void Save(Bitmap bmp, string pathFileName, int quality = 75)
         {
-            byte[] rawWebP;
-
-            try
-            {
-                //Encode in webP format
-                rawWebP = EncodeLossy(bmp, quality);
-
-                //Write webP file
-                File.WriteAllBytes(pathFileName, rawWebP);
-            }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.Save"); }
+			//Encode in webP format and Write webP file
+			File.WriteAllBytes(pathFileName, this.EncodeLossy(bmp, quality));
         }
 
         /// <summary>Lossy encoding bitmap to WebP (Simple encoding API)</summary>
@@ -389,7 +370,6 @@ namespace WebPWrapper
 
                 return rawWebP;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.EncodeLossly"); }
             finally
             {
                 //Unlock the pixels
@@ -474,7 +454,6 @@ namespace WebPWrapper
 
                 return rawWebP;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.EncodeLossless (Simple)"); }
             finally
             {
                 //Unlock the pixels
@@ -570,15 +549,11 @@ namespace WebPWrapper
         /// <returns>Version of library</returns>
         public string GetVersion()
         {
-            try
-            {
-                uint v = (uint)UnsafeNativeMethods.WebPGetDecoderVersion();
-                var revision = v % 256;
-                var minor = (v >> 8) % 256;
-                var major = (v >> 16) % 256;
-                return major + "." + minor + "." + revision;
-            }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.GetVersion"); }
+            uint v = (uint)UnsafeNativeMethods.WebPGetDecoderVersion();
+            var revision = v % 256;
+            var minor = (v >> 8) % 256;
+            var major = (v >> 16) % 256;
+            return major + "." + minor + "." + revision;
         }
 
         /// <summary>Get info of WEBP data</summary>
@@ -620,7 +595,6 @@ namespace WebPWrapper
                         break;
                 }
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.GetInfo"); }
             finally
             {
                 //Free memory
@@ -705,7 +679,6 @@ namespace WebPWrapper
                     throw new Exception("Can´t measure.");
                 return result;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.GetPictureDistortion"); }
             finally
             {
                 //Unlock the pixels
@@ -859,7 +832,6 @@ namespace WebPWrapper
 
                 return rawWebP;
             }
-            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.AdvancedEncode"); }
             finally
             {
                 //Free temporal compress memory
