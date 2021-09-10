@@ -524,13 +524,24 @@ namespace WebPWrapper
             return AdvancedEncode(bmp, config, false, out stats);
         }
 
-        /// <summary>Near lossless encoding image in bitmap</summary>
-        /// <param name="bmp">Bitmap with the image</param>
-        /// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
-        /// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
-        /// <returns>Compress data</returns>
-        public byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed = 9)
-        {
+		public byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed = 9)
+		{
+			WebPAuxStats dummy;
+			return EncodeNearLossless(bmp, quality, speed, false, out dummy);
+		}
+
+		public byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed, out WebPAuxStats stats)
+		{
+			return EncodeNearLossless(bmp, quality, speed, true, out stats);
+		}
+
+		/// <summary>Near lossless encoding image in bitmap</summary>
+		/// <param name="bmp">Bitmap with the image</param>
+		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
+		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
+		/// <returns>Compress data</returns>
+		public byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed, bool info, out WebPAuxStats stats)
+		{
             //test dll version
             if (UnsafeNativeMethods.WebPGetDecoderVersion() <= 1082)
                 throw new Exception("This dll version not suport EncodeNearLossless");
@@ -550,8 +561,7 @@ namespace WebPWrapper
             config.use_sharp_yuv = 1;
             config.exact = 0;
 
-			WebPAuxStats stats;
-            return AdvancedEncode(bmp, config, false, out stats);
+            return AdvancedEncode(bmp, config, info, out stats);
         }
         #endregion
 
