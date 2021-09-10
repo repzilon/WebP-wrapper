@@ -31,7 +31,7 @@ using System.Security;
 
 namespace WebPWrapper
 {
-    public sealed class WebP : IDisposable
+    public sealed class WebP
     {
         private const int WEBP_MAX_DIMENSION = 16383;
         #region | Public Decode Functions |
@@ -897,14 +897,6 @@ namespace WebPWrapper
         }
 
         private delegate int MyWriterDelegate([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture);
-        #endregion
-
-        #region | Destruction |
-        /// <summary>Free memory</summary>
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
         #endregion
     }
 

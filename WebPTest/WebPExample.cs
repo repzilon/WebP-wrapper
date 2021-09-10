@@ -29,9 +29,9 @@ namespace WebPTest
                 else
                     this.Text = Application.ProductName + " x86 v" + Application.ProductVersion;
 
-                //Inform of libWebP version
-                using (WebP webp = new WebP())
-                    this.Text = this.Text + " (libwebp v" + webp.GetVersion() + ")";
+				//Inform of libWebP version
+				WebP webp = new WebP();
+                this.Text = this.Text + " (libwebp v" + webp.GetVersion() + ")";
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace WebPTest
 
                         if (Path.GetExtension(pathFileName) == ".webp")
                         {
-                            using (WebP webp = new WebP())
+                            WebP webp = new WebP();
                                 pictureBox.Image = webp.Load(pathFileName);
                         }
                         else
@@ -90,7 +90,7 @@ namespace WebPTest
                         string pathFileName = openFileDialog.FileName;
 
                         byte[] rawWebP = File.ReadAllBytes(pathFileName);
-                        using (WebP webp = new WebP())
+                        WebP webp = new WebP();
                             this.pictureBox.Image = webp.GetThumbnailQuality(rawWebP, 200, 150);
                     }
                 }
@@ -127,7 +127,7 @@ namespace WebPTest
                             use_threads = 1,         //Use multhreading
                             flip = 1                //Flip the image
                         };
-                        using (WebP webp = new WebP())
+                        WebP webp = new WebP();
                             this.pictureBox.Image = webp.Decode(rawWebP, decoderOptions);
                     }
                 }
@@ -156,30 +156,26 @@ namespace WebPTest
 
                 //Test simple encode lossly mode in memory with quality 75
                 string lossyFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimpleLossy.webp");
-                using (WebP webp = new WebP())
+                WebP webp = new WebP();
                     rawWebP = webp.EncodeLossy(bmp, 75);
                 File.WriteAllBytes(lossyFileName, rawWebP);
                 MessageBox.Show("Made " + lossyFileName, "Simple lossy");
 
                 //Test simple encode lossless mode in memory
                 string simpleLosslessFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimpleLossless.webp");
-                using (WebP webp = new WebP())
                     rawWebP = webp.EncodeLossless(bmp);
                 File.WriteAllBytes(simpleLosslessFileName, rawWebP);
                 MessageBox.Show("Made " + simpleLosslessFileName, "Simple lossless");
 
                 //Test encode lossly mode in memory with quality 75 and speed 9
                 string advanceLossyFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AdvanceLossy.webp");
-				using (WebP webp = new WebP()) {
 					WebPAuxStats lossyStats;
 					rawWebP = webp.EncodeLossy(bmp, 71, 9, true, out lossyStats);
-				}
                 File.WriteAllBytes(advanceLossyFileName, rawWebP);
                 MessageBox.Show("Made " + advanceLossyFileName, "Advance lossy");
 
                 //Test advance encode lossless mode in memory with speed 9
                 string losslessFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AdvanceLossless.webp");
-                using (WebP webp = new WebP())
                     rawWebP = webp.EncodeLossless(bmp, 9);
                 File.WriteAllBytes(losslessFileName, rawWebP);
                 MessageBox.Show("Made " + losslessFileName, "Advance lossless");
@@ -191,7 +187,6 @@ namespace WebPTest
                 // quality 40: High PSNR (around 42dB) and gets an additional 30-35% size reduction over WebP-lossless image.
                 // quality 20 (and below): Moderate PSNR (around 36dB) and gets an additional 40-50% size reduction over WebP-lossless image.
                 string nearLosslessFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NearLossless.webp");
-                using (WebP webp = new WebP())
                     rawWebP = webp.EncodeNearLossless(bmp, 40, 9);
                 File.WriteAllBytes(nearLosslessFileName, rawWebP);
                 MessageBox.Show("Made " + nearLosslessFileName, "Near lossless");
@@ -226,21 +221,18 @@ namespace WebPTest
 
                         //Load Bitmaps
                         source = (Bitmap)this.pictureBox.Image;
-                        using (WebP webp = new WebP())
+                        WebP webp = new WebP();
                             reference = webp.Load(openFileDialog.FileName);
 
                         //Measure PSNR
-                        using (WebP webp = new WebP())
                             result = webp.GetPictureDistortion(source, reference, 0);
                         MessageBox.Show("Red: " + result[0] + "dB.\nGreen: " + result[1] + "dB.\nBlue: " + result[2] + "dB.\nAlpha: " + result[3] + "dB.\nAll: " + result[4] + "dB.", "PSNR");
 
                         //Measure SSIM
-                        using (WebP webp = new WebP())
                             result = webp.GetPictureDistortion(source, reference, 1);
                         MessageBox.Show("Red: " + result[0] + "dB.\nGreen: " + result[1] + "dB.\nBlue: " + result[2] + "dB.\nAlpha: " + result[3] + "dB.\nAll: " + result[4] + "dB.", "SSIM");
 
                         //Measure LSIM
-                        using (WebP webp = new WebP())
                             result = webp.GetPictureDistortion(source, reference, 2);
                         MessageBox.Show("Red: " + result[0] + "dB.\nGreen: " + result[1] + "dB.\nBlue: " + result[2] + "dB.\nAlpha: " + result[3] + "dB.\nAll: " + result[4] + "dB.", "LSIM");
                     }
@@ -274,7 +266,7 @@ namespace WebPTest
                         string pathFileName = openFileDialog.FileName;
 
                         byte[] rawWebp = File.ReadAllBytes(pathFileName);
-                        using (WebP webp = new WebP())
+                        WebP webp = new WebP();
                             webp.GetInfo(rawWebp, out width, out height, out has_alpha, out has_animation, out format);
                         MessageBox.Show("Width: " + width + "\n" +
                                         "Height: " + height + "\n" +
