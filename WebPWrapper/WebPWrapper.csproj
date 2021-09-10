@@ -39,8 +39,12 @@
     <Compile Include="WebPWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="libwebp_x64.dll" />
-    <Content Include="libwebp_x86.dll" />
+    <Content Include="libwebp_x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libwebp_x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
