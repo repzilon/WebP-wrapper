@@ -103,11 +103,11 @@ namespace WebPTest
 						WebPDecoderOptions decoderOptions = new WebPDecoderOptions
 						{
 							use_cropping = 1,
-							crop_top = 10,          //Top beging of crop area
-							crop_left = 10,         //Left beging of crop area
+							crop_top = 10,          //Top beginning of crop area
+							crop_left = 10,         //Left beginning of crop area
 							crop_height = 250,       //Height of crop area
 							crop_width = 300,        //Width of crop area
-							use_threads = 1,         //Use multhreading
+							use_threads = 1,         //Use multi-threading
 							flip = 1                //Flip the image
 						};
 						WebP webp = new WebP();
@@ -132,23 +132,23 @@ namespace WebPTest
 					MessageBox.Show("Please, load an image first");
 				}
 
-				//get the picturebox image
+				//get the picture box image
 				Bitmap bmp = (Bitmap)pictureBox.Image;
 
-				//Test simple encode lossly mode in memory with quality 75
+				//Test simple encode in lossy mode in memory with quality 75
 				string lossyFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimpleLossy.webp");
 				WebP webp = new WebP();
 				rawWebP = webp.EncodeLossy(bmp, 75);
 				File.WriteAllBytes(lossyFileName, rawWebP);
 				MessageBox.Show("Made " + lossyFileName, "Simple lossy");
 
-				//Test simple encode lossless mode in memory
+				//Test simple encode in lossless mode in memory
 				string simpleLosslessFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimpleLossless.webp");
 				rawWebP = webp.EncodeLossless(bmp);
 				File.WriteAllBytes(simpleLosslessFileName, rawWebP);
 				MessageBox.Show("Made " + simpleLosslessFileName, "Simple lossless");
 
-				//Test encode lossly mode in memory with quality 75 and speed 9
+				//Test encode in lossy mode in memory with quality 75 and speed 9
 				string advanceLossyFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AdvanceLossy.webp");
 				WebPAuxStats lossyStats;
 				rawWebP = webp.EncodeLossy(bmp, 71, 9, true, out lossyStats);
@@ -267,14 +267,14 @@ namespace WebPTest
 				"Block skipped: " + stats.block_count_skipped + "\n" +
 				"Header size:    " + stats.header_bytes + " bytes\n" +
 				"Mode-partition: " + stats.mode_partition_0 + " bytes\n" +
-				"Macroblocks 0:  " + stats.segment_size_segments0 + " residuals bytes\n" +
-				"Macroblocks 1:  " + stats.segment_size_segments1 + " residuals bytes\n" +
-				"Macroblocks 2:  " + stats.segment_size_segments2 + " residuals bytes\n" +
-				"Macroblocks 3:  " + stats.segment_size_segments3 + " residuals bytes\n" +
-				"Quantizer   0:  " + stats.segment_quant_segments0 + " residuals bytes\n" +
-				"Quantizer   1:  " + stats.segment_quant_segments1 + " residuals bytes\n" +
-				"Quantizer   2:  " + stats.segment_quant_segments2 + " residuals bytes\n" +
-				"Quantizer   3:  " + stats.segment_quant_segments3 + " residuals bytes\n" +
+				"Macro-blocks 0: " + stats.segment_size_segments0 + " residuals bytes\n" +
+				"Macro-blocks 1: " + stats.segment_size_segments1 + " residuals bytes\n" +
+				"Macro-blocks 2: " + stats.segment_size_segments2 + " residuals bytes\n" +
+				"Macro-blocks 3: " + stats.segment_size_segments3 + " residuals bytes\n" +
+				"Quantizer    0: " + stats.segment_quant_segments0 + " residuals bytes\n" +
+				"Quantizer    1: " + stats.segment_quant_segments1 + " residuals bytes\n" +
+				"Quantizer    2: " + stats.segment_quant_segments2 + " residuals bytes\n" +
+				"Quantizer    3: " + stats.segment_quant_segments3 + " residuals bytes\n" +
 				"Filter level 0: " + stats.segment_level_segments0 + " residuals bytes\n" +
 				"Filter level 1: " + stats.segment_level_segments1 + " residuals bytes\n" +
 				"Filter level 2: " + stats.segment_level_segments2 + " residuals bytes\n" +
