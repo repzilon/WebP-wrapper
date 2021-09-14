@@ -8,6 +8,8 @@ using System.IO;
 using System.Windows.Forms;
 using WebPWrapper;
 
+#pragma warning disable IDE0007 // Use implicit type
+
 namespace WebPTest
 {
 	public partial class WebPExample : Form
@@ -22,15 +24,11 @@ namespace WebPTest
 		{
 			try {
 				//Inform of execution mode
-				if (IntPtr.Size == 8) {
-					this.Text = Application.ProductName + " x64 v" + Application.ProductVersion;
-				} else {
-					this.Text = Application.ProductName + " x86 v" + Application.ProductVersion;
-				}
+				this.Text = Application.ProductName + (IntPtr.Size == 8 ? " x64 v" : " x86 v") + Application.ProductVersion;
 
 				//Inform of libWebP version
 				WebP webp = new WebP();
-				this.Text = this.Text + " (libwebp v" + webp.GetVersion() + ")";
+				this.Text += " (libwebp v" + webp.GetVersion() + ")";
 			} catch (Exception ex) {
 				MessageBox.Show(ex.Message + "\r\nIn WebPExample.WebPExample_Load", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}

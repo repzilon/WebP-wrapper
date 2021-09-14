@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 #endregion
 [assembly: AssemblyTitle("WebP42")]
 [assembly: AssemblyDescription("Optimizing Batch WebP converter")]
-#if (DEBUG)
+#if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
 #else
 [assembly: AssemblyConfiguration("Release")]

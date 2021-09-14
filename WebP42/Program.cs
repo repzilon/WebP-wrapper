@@ -6,6 +6,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using WebPWrapper;
 
+#pragma warning disable IDE0007 // Use implicit type
+
 namespace WebP42
 {
 	[StructLayout(LayoutKind.Auto)]
@@ -26,7 +28,9 @@ namespace WebP42
 
 		private static void Main(string[] args)
 		{
+#pragma warning disable U2U1017 // Initialized locals should be used
 			DateTime dtmStart = DateTime.UtcNow;
+#pragma warning restore U2U1017 // Initialized locals should be used
 			bool blnRecursive = false;
 
 			try {
@@ -161,7 +165,9 @@ namespace WebP42
 			return (m > 1) ? inputPath + ".webp" : Path.ChangeExtension(inputPath, ".webp");
 		}
 
+#pragma warning disable U2U1012 // Parameter types should be specific
 		private static bool IsAnimated(Image image, string filePath)
+#pragma warning restore U2U1012 // Parameter types should be specific
 		{
 			if (ImageAnimator.CanAnimate(image)) {
 				return true;
@@ -175,7 +181,7 @@ namespace WebP42
 		{
 			byte bytPercent = 100;
 			if (newSize < originalSize) {
-				bytPercent = (byte)Math.Round((newSize * 100.0) / (originalSize * 1.0));
+				bytPercent = (byte)Math.Round(newSize * 100.0 / (originalSize * 1.0));
 				if (bytPercent == 100) {
 					bytPercent = 99;
 				}

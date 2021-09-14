@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 #endregion
 [assembly: AssemblyTitle("WebP Wrapper for .NET")]
 [assembly: AssemblyDescription("WebP Wrapper for .NET")]
-#if (DEBUG)
+#if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
 #else
 [assembly: AssemblyConfiguration("Release")]
