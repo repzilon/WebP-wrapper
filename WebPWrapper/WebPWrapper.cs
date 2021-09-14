@@ -54,19 +54,15 @@ namespace WebPWrapper
 
 			try {
 				//Get image width and height
-				this.GetInfo(rawWebP, out int imgWidth, out int imgHeight, out bool hasAlpha, out bool hasAnimation, out string format);
+				WebPInfo info = this.GetInfo(rawWebP);
 
 				//Create a BitmapData and Lock all pixels to be written
-				if (hasAlpha) {
-					pixelMap = new Bitmap(imgWidth, imgHeight, PixelFormat.Format32bppArgb);
-				} else {
-					pixelMap = new Bitmap(imgWidth, imgHeight, PixelFormat.Format24bppRgb);
-				}
+				pixelMap = new Bitmap(info.Width, info.Height, info.HasAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb);
 
-				bmpData = pixelMap.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.WriteOnly, pixelMap.PixelFormat);
+				bmpData = pixelMap.LockBits(new Rectangle(0, 0, info.Width, info.Height), ImageLockMode.WriteOnly, pixelMap.PixelFormat);
 
 				//Uncompress the image
-				int outputSize = bmpData.Stride * imgHeight;
+				int outputSize = bmpData.Stride * info.Height;
 				IntPtr ptrData = pinnedWebP.AddrOfPinnedObject();
 				if (pixelMap.PixelFormat == PixelFormat.Format24bppRgb) {
 					size = UnsafeNativeMethods.WebPDecodeBGRInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, bmpData.Stride);
@@ -575,12 +571,7 @@ namespace WebPWrapper
 
 		/// <summary>Get info of WEBP data</summary>
 		/// <param name="rawWebP">The data of WebP</param>
-		/// <param name="width">width of image</param>
-		/// <param name="height">height of image</param>
-		/// <param name="has_alpha">Image has alpha channel</param>
-		/// <param name="has_animation">Image is a animation</param>
-		/// <param name="format">Format of image: 0 = undefined (/mixed), 1 = lossy, 2 = lossless</param>
-		public void GetInfo(byte[] rawWebP, out int width, out int height, out bool has_alpha, out bool has_animation, out string format)
+		public WebPInfo GetInfo(byte[] rawWebP)
 		{
 			VP8StatusCode result;
 			GCHandle pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
@@ -590,36 +581,23 @@ namespace WebPWrapper
 
 				WebPBitstreamFeatures features = new WebPBitstreamFeatures();
 				result = UnsafeNativeMethods.WebPGetFeatures(ptrRawWebP, rawWebP.Length, ref features);
-
 				if (result != 0) {
 					throw new Exception(result.ToString());
 				}
-
-				width = features.Width;
-				height = features.Height;
-				if (features.Has_alpha == 1) {
-					has_alpha = true;
-				} else {
-					has_alpha = false;
-				}
-
-				if (features.Has_animation == 1) {
-					has_animation = true;
-				} else {
-					has_animation = false;
-				}
+				WebPInfo info = new WebPInfo() { Width = (short)features.Width, Height = (short)features.Height, HasAlpha = features.Has_alpha == 1, IsAnimated = features.Has_animation == 1 };
 
 				switch (features.Format) {
 					case 1:
-						format = "lossy";
+						info.Format = "lossy";
 						break;
 					case 2:
-						format = "lossless";
+						info.Format = "lossless";
 						break;
 					default:
-						format = "undefined";
+						info.Format = "undefined";
 						break;
 				}
+				return info;
 			} finally {
 				//Free memory
 				if (pinnedWebP.IsAllocated) {
@@ -1471,7 +1449,7 @@ namespace WebPWrapper
 		WEBP_HINT_GRAPH,
 		/// <summary>list terminator. always last.</summary>
 		WEBP_HINT_LAST
-	};
+	}
 
 	/// <summary>Describes the byte-ordering of packed samples in memory.</summary>
 	internal enum WEBP_CSP_MODE
@@ -1526,7 +1504,7 @@ namespace WebPWrapper
 		STATE_VP8L_DATA,
 		STATE_DONE,
 		STATE_ERROR
-	};
+	}
 	#endregion
 
 	#region | libwebp structs |
@@ -1547,7 +1525,7 @@ namespace WebPWrapper
 		/// <summary>Padding for later use.</summary>
 		[MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 5, ArraySubType = UnmanagedType.U4)]
 		private readonly uint[] pad;
-	};
+	}
 
 	/// <summary>Compression parameters.</summary>
 	[StructLayoutAttribute(LayoutKind.Sequential)]
@@ -1610,7 +1588,7 @@ namespace WebPWrapper
 		/// <summary>Padding for later use.</summary>
 		private readonly int pad1;
 		private readonly int pad2;
-	};
+	}
 
 	/// <summary>Main exchange structure (input samples, output bytes, statistics)</summary>
 	[StructLayoutAttribute(LayoutKind.Sequential)]
@@ -1776,7 +1754,7 @@ namespace WebPWrapper
 		/// <summary>Padding for later use.</summary>
 		[MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.U4)]
 		private readonly uint[] pad;
-	};
+	}
 
 	[StructLayoutAttribute(LayoutKind.Sequential)]
 	internal struct WebPDecoderConfig
@@ -1909,6 +1887,16 @@ namespace WebPWrapper
 		private readonly uint pad4;
 		/// <summary>padding for later use.</summary>
 		private readonly uint pad5;
-	};
+	}
+
+	[StructLayout(LayoutKind.Auto)]
+	public struct WebPInfo
+	{
+		public short Width;
+		public short Height;
+		public bool HasAlpha;
+		public bool IsAnimated;
+		public string Format;
+	}
 	#endregion
 }

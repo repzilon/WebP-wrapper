@@ -225,12 +225,6 @@ namespace WebPTest
 		/// </summary>
 		private void ButtonInfo_Click(object sender, EventArgs e)
 		{
-			int width;
-			int height;
-			bool has_alpha;
-			bool has_animation;
-			string format;
-
 			try {
 				using (OpenFileDialog openFileDialog = new OpenFileDialog()) {
 					openFileDialog.Filter = "WebP images (*.webp)|*.webp";
@@ -240,12 +234,12 @@ namespace WebPTest
 
 						byte[] rawWebp = File.ReadAllBytes(pathFileName);
 						WebP webp = new WebP();
-						webp.GetInfo(rawWebp, out width, out height, out has_alpha, out has_animation, out format);
-						MessageBox.Show("Width: " + width + "\n" +
-										"Height: " + height + "\n" +
-										"Has alpha: " + has_alpha + "\n" +
-										"Is animation: " + has_animation + "\n" +
-										"Format: " + format, "Information");
+						WebPInfo info = webp.GetInfo(rawWebp);
+						MessageBox.Show("Width: " + info.Width + "\n" +
+										"Height: " + info.Height + "\n" +
+										"Has alpha: " + info.HasAlpha + "\n" +
+										"Is animation: " + info.IsAnimated + "\n" +
+										"Format: " + info.Format, "Information");
 					}
 				}
 			} catch (Exception ex) {

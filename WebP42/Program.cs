@@ -36,7 +36,7 @@ namespace WebP42
 				} else {
 					int c = 0;
 					for (int i = 0; i < args.Length; i++) {
-						var argi = args[i];
+						string argi = args[i];
 						if ((argi == "-R") || (argi == "/R") || (argi == "--recursive")) {
 							blnRecursive = true;
 						} else if (File.Exists(argi)) {
@@ -252,7 +252,7 @@ namespace WebP42
 
 		private static bool RemoveUnsupportedFiles(string path)
 		{
-			var strExt = Path.GetExtension(path);
+			string strExt = Path.GetExtension(path);
 			return (strExt == ".config") || (strExt == ".svg") || (strExt == ".webp");
 		}
 
@@ -268,7 +268,7 @@ namespace WebP42
 
 		private static List<string> FindImages(string directory, string globPattern, bool recursive)
 		{
-			var lstImages = new List<string>(Directory.GetFiles(directory, globPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+			List<string> lstImages = new List<string>(Directory.GetFiles(directory, globPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
 			lstImages.RemoveAll(RemoveUnsupportedFiles);
 			lstImages.Sort();
 			return lstImages;
