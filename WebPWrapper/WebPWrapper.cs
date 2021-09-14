@@ -22,11 +22,11 @@
 // float[] PictureDistortion(Bitmap source, Bitmap reference, int metric_type) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security;
 
 #pragma warning disable IDE0007 // Use implicit type
 
@@ -1790,7 +1790,7 @@ namespace WebPWrapper
 
 	/// <summary>Structure for storing auxiliary statistics (mostly for lossy encoding).</summary>
 	[StructLayout(LayoutKind.Sequential)]
-	public struct WebPAuxStats
+	public struct WebPAuxStats : IEquatable<WebPAuxStats>
 	{
 		/// <summary>Final size</summary>
 		public int coded_size;
@@ -1931,6 +1931,125 @@ namespace WebPWrapper
 		/// <summary>Padding for later use.</summary>
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.U4)]
 		private readonly uint[] pad;
+
+		public override bool Equals(object obj)
+		{
+			return obj is WebPAuxStats && this.Equals((WebPAuxStats)obj);
+		}
+
+		public bool Equals(WebPAuxStats other)
+		{
+			const float EPSILON = 0.0001F;
+			return coded_size == other.coded_size &&
+				Math.Abs(PSNRY - other.PSNRY) < EPSILON &&
+				Math.Abs(PSNRU - other.PSNRU) < EPSILON &&
+				Math.Abs(PSNRV - other.PSNRV) < EPSILON &&
+				Math.Abs(PSNRALL - other.PSNRALL) < EPSILON &&
+				Math.Abs(PSNRAlpha - other.PSNRAlpha) < EPSILON &&
+				   block_count_intra4 == other.block_count_intra4 &&
+				   block_count_intra16 == other.block_count_intra16 &&
+				   block_count_skipped == other.block_count_skipped &&
+				   header_bytes == other.header_bytes &&
+				   mode_partition_0 == other.mode_partition_0 &&
+				   residual_bytes_DC_segments0 == other.residual_bytes_DC_segments0 &&
+				   residual_bytes_AC_segments0 == other.residual_bytes_AC_segments0 &&
+				   residual_bytes_uv_segments0 == other.residual_bytes_uv_segments0 &&
+				   residual_bytes_DC_segments1 == other.residual_bytes_DC_segments1 &&
+				   residual_bytes_AC_segments1 == other.residual_bytes_AC_segments1 &&
+				   residual_bytes_uv_segments1 == other.residual_bytes_uv_segments1 &&
+				   residual_bytes_DC_segments2 == other.residual_bytes_DC_segments2 &&
+				   residual_bytes_AC_segments2 == other.residual_bytes_AC_segments2 &&
+				   residual_bytes_uv_segments2 == other.residual_bytes_uv_segments2 &&
+				   residual_bytes_DC_segments3 == other.residual_bytes_DC_segments3 &&
+				   residual_bytes_AC_segments3 == other.residual_bytes_AC_segments3 &&
+				   residual_bytes_uv_segments3 == other.residual_bytes_uv_segments3 &&
+				   segment_size_segments0 == other.segment_size_segments0 &&
+				   segment_size_segments1 == other.segment_size_segments1 &&
+				   segment_size_segments2 == other.segment_size_segments2 &&
+				   segment_size_segments3 == other.segment_size_segments3 &&
+				   segment_quant_segments0 == other.segment_quant_segments0 &&
+				   segment_quant_segments1 == other.segment_quant_segments1 &&
+				   segment_quant_segments2 == other.segment_quant_segments2 &&
+				   segment_quant_segments3 == other.segment_quant_segments3 &&
+				   segment_level_segments0 == other.segment_level_segments0 &&
+				   segment_level_segments1 == other.segment_level_segments1 &&
+				   segment_level_segments2 == other.segment_level_segments2 &&
+				   segment_level_segments3 == other.segment_level_segments3 &&
+				   alpha_data_size == other.alpha_data_size &&
+				   layer_data_size == other.layer_data_size &&
+				   lossless_features == other.lossless_features &&
+				   histogram_bits == other.histogram_bits &&
+				   transform_bits == other.transform_bits &&
+				   cache_bits == other.cache_bits &&
+				   palette_size == other.palette_size &&
+				   lossless_size == other.lossless_size &&
+				   lossless_hdr_size == other.lossless_hdr_size &&
+				   lossless_data_size == other.lossless_data_size;
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = -2133640376;
+			// This is a non-issue because this is a structure, not a class.
+#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			hashCode = (hashCode * -1521134295) + coded_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + PSNRY.GetHashCode();
+			hashCode = (hashCode * -1521134295) + PSNRU.GetHashCode();
+			hashCode = (hashCode * -1521134295) + PSNRV.GetHashCode();
+			hashCode = (hashCode * -1521134295) + PSNRALL.GetHashCode();
+			hashCode = (hashCode * -1521134295) + PSNRAlpha.GetHashCode();
+			hashCode = (hashCode * -1521134295) + block_count_intra4.GetHashCode();
+			hashCode = (hashCode * -1521134295) + block_count_intra16.GetHashCode();
+			hashCode = (hashCode * -1521134295) + block_count_skipped.GetHashCode();
+			hashCode = (hashCode * -1521134295) + header_bytes.GetHashCode();
+			hashCode = (hashCode * -1521134295) + mode_partition_0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_size_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_size_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_size_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_size_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_quant_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_quant_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_quant_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_quant_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_level_segments0.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_level_segments1.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_level_segments2.GetHashCode();
+			hashCode = (hashCode * -1521134295) + segment_level_segments3.GetHashCode();
+			hashCode = (hashCode * -1521134295) + alpha_data_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + layer_data_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + lossless_features.GetHashCode();
+			hashCode = (hashCode * -1521134295) + histogram_bits.GetHashCode();
+			hashCode = (hashCode * -1521134295) + transform_bits.GetHashCode();
+			hashCode = (hashCode * -1521134295) + cache_bits.GetHashCode();
+			hashCode = (hashCode * -1521134295) + palette_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + lossless_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + lossless_hdr_size.GetHashCode();
+			hashCode = (hashCode * -1521134295) + lossless_data_size.GetHashCode();
+#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			return hashCode;
+		}
+
+		public static bool operator ==(WebPAuxStats stats1, WebPAuxStats stats2)
+		{
+			return stats1.Equals(stats2);
+		}
+
+		public static bool operator !=(WebPAuxStats stats1, WebPAuxStats stats2)
+		{
+			return !(stats1 == stats2);
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -2048,7 +2167,7 @@ namespace WebPWrapper
 
 	/// <summary>Decoding options</summary>
 	[StructLayout(LayoutKind.Sequential)]
-	public struct WebPDecoderOptions
+	public struct WebPDecoderOptions : IEquatable<WebPDecoderOptions>
 	{
 		/// <summary>if true, skip the in-loop filtering.</summary>
 		public int bypass_filtering;
@@ -2106,16 +2225,109 @@ namespace WebPWrapper
 
 		/// <summary>padding for later use.</summary>
 		private readonly uint pad5;
+
+		public override bool Equals(object obj)
+		{
+			return obj is WebPDecoderOptions && this.Equals((WebPDecoderOptions)obj);
+		}
+
+		public bool Equals(WebPDecoderOptions other)
+		{
+			return bypass_filtering == other.bypass_filtering &&
+				   no_fancy_upsampling == other.no_fancy_upsampling &&
+				   use_cropping == other.use_cropping &&
+				   crop_left == other.crop_left &&
+				   crop_top == other.crop_top &&
+				   crop_width == other.crop_width &&
+				   crop_height == other.crop_height &&
+				   use_scaling == other.use_scaling &&
+				   scaled_width == other.scaled_width &&
+				   scaled_height == other.scaled_height &&
+				   use_threads == other.use_threads &&
+				   dithering_strength == other.dithering_strength &&
+				   flip == other.flip &&
+				   alpha_dithering_strength == other.alpha_dithering_strength;
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = 1943392893;
+			// This is a non-issue because this is a structure, not a class.
+#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			hashCode = (hashCode * -1521134295) + bypass_filtering.GetHashCode();
+			hashCode = (hashCode * -1521134295) + no_fancy_upsampling.GetHashCode();
+			hashCode = (hashCode * -1521134295) + use_cropping.GetHashCode();
+			hashCode = (hashCode * -1521134295) + crop_left.GetHashCode();
+			hashCode = (hashCode * -1521134295) + crop_top.GetHashCode();
+			hashCode = (hashCode * -1521134295) + crop_width.GetHashCode();
+			hashCode = (hashCode * -1521134295) + crop_height.GetHashCode();
+			hashCode = (hashCode * -1521134295) + use_scaling.GetHashCode();
+			hashCode = (hashCode * -1521134295) + scaled_width.GetHashCode();
+			hashCode = (hashCode * -1521134295) + scaled_height.GetHashCode();
+			hashCode = (hashCode * -1521134295) + use_threads.GetHashCode();
+			hashCode = (hashCode * -1521134295) + dithering_strength.GetHashCode();
+			hashCode = (hashCode * -1521134295) + flip.GetHashCode();
+			hashCode = (hashCode * -1521134295) + alpha_dithering_strength.GetHashCode();
+#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			return hashCode;
+		}
+
+		public static bool operator ==(WebPDecoderOptions options1, WebPDecoderOptions options2)
+		{
+			return options1.Equals(options2);
+		}
+
+		public static bool operator !=(WebPDecoderOptions options1, WebPDecoderOptions options2)
+		{
+			return !(options1 == options2);
+		}
 	}
 
 	[StructLayout(LayoutKind.Auto)]
-	public struct WebPInfo
+	public struct WebPInfo : IEquatable<WebPInfo>
 	{
 		public short Width;
 		public short Height;
 		public bool HasAlpha;
 		public bool IsAnimated;
 		public string Format;
+
+		public override bool Equals(object obj)
+		{
+			return obj is WebPInfo && this.Equals((WebPInfo)obj);
+		}
+
+		public bool Equals(WebPInfo other)
+		{
+			return Width == other.Width &&
+				   Height == other.Height &&
+				   HasAlpha == other.HasAlpha &&
+				   IsAnimated == other.IsAnimated &&
+				   Format == other.Format;
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = 1439674596;
+#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			hashCode = (hashCode * -1521134295) + Width.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Height.GetHashCode();
+			hashCode = (hashCode * -1521134295) + HasAlpha.GetHashCode();
+			hashCode = (hashCode * -1521134295) + IsAnimated.GetHashCode();
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Format);
+#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+			return hashCode;
+		}
+
+		public static bool operator ==(WebPInfo info1, WebPInfo info2)
+		{
+			return info1.Equals(info2);
+		}
+
+		public static bool operator !=(WebPInfo info1, WebPInfo info2)
+		{
+			return !(info1 == info2);
+		}
 	}
 	#endregion
 }
