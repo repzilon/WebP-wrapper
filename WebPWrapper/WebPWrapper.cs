@@ -1939,7 +1939,11 @@ namespace WebPWrapper
 
 		public bool Equals(WebPAuxStats other)
 		{
-			const float EPSILON = 0.0001F;
+#pragma warning disable U2U1000 // Local variable can be inlined or declared constant
+#pragma warning disable RCS1118 // Mark local variable as constant.
+			/* const */ float EPSILON = 0.0001F; // being a variable makes IL smaller
+#pragma warning restore RCS1118 // Mark local variable as constant.
+#pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			return coded_size == other.coded_size &&
 				Math.Abs(PSNRY - other.PSNRY) < EPSILON &&
 				Math.Abs(PSNRU - other.PSNRU) < EPSILON &&
@@ -1989,55 +1993,60 @@ namespace WebPWrapper
 
 		public override int GetHashCode()
 		{
-			var hashCode = -2133640376;
+#pragma warning disable U2U1000 // Local variable can be inlined or declared constant
+#pragma warning disable RCS1118 // Mark local variable as constant.
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+#pragma warning restore RCS1118 // Mark local variable as constant.
+#pragma warning restore U2U1000 // Local variable can be inlined or declared constant
+			int hashCode = -2133640376;
 			// This is a non-issue because this is a structure, not a class.
-#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
-			hashCode = (hashCode * -1521134295) + coded_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + PSNRY.GetHashCode();
-			hashCode = (hashCode * -1521134295) + PSNRU.GetHashCode();
-			hashCode = (hashCode * -1521134295) + PSNRV.GetHashCode();
-			hashCode = (hashCode * -1521134295) + PSNRALL.GetHashCode();
-			hashCode = (hashCode * -1521134295) + PSNRAlpha.GetHashCode();
-			hashCode = (hashCode * -1521134295) + block_count_intra4.GetHashCode();
-			hashCode = (hashCode * -1521134295) + block_count_intra16.GetHashCode();
-			hashCode = (hashCode * -1521134295) + block_count_skipped.GetHashCode();
-			hashCode = (hashCode * -1521134295) + header_bytes.GetHashCode();
-			hashCode = (hashCode * -1521134295) + mode_partition_0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_DC_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_AC_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + residual_bytes_uv_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_size_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_size_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_size_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_size_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_quant_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_quant_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_quant_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_quant_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_level_segments0.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_level_segments1.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_level_segments2.GetHashCode();
-			hashCode = (hashCode * -1521134295) + segment_level_segments3.GetHashCode();
-			hashCode = (hashCode * -1521134295) + alpha_data_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + layer_data_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + lossless_features.GetHashCode();
-			hashCode = (hashCode * -1521134295) + histogram_bits.GetHashCode();
-			hashCode = (hashCode * -1521134295) + transform_bits.GetHashCode();
-			hashCode = (hashCode * -1521134295) + cache_bits.GetHashCode();
-			hashCode = (hashCode * -1521134295) + palette_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + lossless_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + lossless_hdr_size.GetHashCode();
-			hashCode = (hashCode * -1521134295) + lossless_data_size.GetHashCode();
-#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+#pragma warning disable RECS0025 // Non read-only field referenced in 'GetHashCode()'
+			hashCode = (hashCode * hashKey) + coded_size;
+			hashCode = (hashCode * hashKey) + PSNRY.GetHashCode();
+			hashCode = (hashCode * hashKey) + PSNRU.GetHashCode();
+			hashCode = (hashCode * hashKey) + PSNRV.GetHashCode();
+			hashCode = (hashCode * hashKey) + PSNRALL.GetHashCode();
+			hashCode = (hashCode * hashKey) + PSNRAlpha.GetHashCode();
+			hashCode = (hashCode * hashKey) + block_count_intra4;
+			hashCode = (hashCode * hashKey) + block_count_intra16;
+			hashCode = (hashCode * hashKey) + block_count_skipped;
+			hashCode = (hashCode * hashKey) + header_bytes;
+			hashCode = (hashCode * hashKey) + mode_partition_0;
+			hashCode = (hashCode * hashKey) + residual_bytes_DC_segments0;
+			hashCode = (hashCode * hashKey) + residual_bytes_AC_segments0;
+			hashCode = (hashCode * hashKey) + residual_bytes_uv_segments0;
+			hashCode = (hashCode * hashKey) + residual_bytes_DC_segments1;
+			hashCode = (hashCode * hashKey) + residual_bytes_AC_segments1;
+			hashCode = (hashCode * hashKey) + residual_bytes_uv_segments1;
+			hashCode = (hashCode * hashKey) + residual_bytes_DC_segments2;
+			hashCode = (hashCode * hashKey) + residual_bytes_AC_segments2;
+			hashCode = (hashCode * hashKey) + residual_bytes_uv_segments2;
+			hashCode = (hashCode * hashKey) + residual_bytes_DC_segments3;
+			hashCode = (hashCode * hashKey) + residual_bytes_AC_segments3;
+			hashCode = (hashCode * hashKey) + residual_bytes_uv_segments3;
+			hashCode = (hashCode * hashKey) + segment_size_segments0;
+			hashCode = (hashCode * hashKey) + segment_size_segments1;
+			hashCode = (hashCode * hashKey) + segment_size_segments2;
+			hashCode = (hashCode * hashKey) + segment_size_segments3;
+			hashCode = (hashCode * hashKey) + segment_quant_segments0;
+			hashCode = (hashCode * hashKey) + segment_quant_segments1;
+			hashCode = (hashCode * hashKey) + segment_quant_segments2;
+			hashCode = (hashCode * hashKey) + segment_quant_segments3;
+			hashCode = (hashCode * hashKey) + segment_level_segments0;
+			hashCode = (hashCode * hashKey) + segment_level_segments1;
+			hashCode = (hashCode * hashKey) + segment_level_segments2;
+			hashCode = (hashCode * hashKey) + segment_level_segments3;
+			hashCode = (hashCode * hashKey) + alpha_data_size;
+			hashCode = (hashCode * hashKey) + layer_data_size;
+			hashCode = (hashCode * hashKey) + lossless_features;
+			hashCode = (hashCode * hashKey) + histogram_bits;
+			hashCode = (hashCode * hashKey) + transform_bits;
+			hashCode = (hashCode * hashKey) + cache_bits;
+			hashCode = (hashCode * hashKey) + palette_size;
+			hashCode = (hashCode * hashKey) + lossless_size;
+			hashCode = (hashCode * hashKey) + lossless_hdr_size;
+			hashCode = (hashCode * hashKey) + lossless_data_size;
+#pragma warning restore RECS0025 // Non read-only field referenced in 'GetHashCode()'
 			return hashCode;
 		}
 
@@ -2251,24 +2260,29 @@ namespace WebPWrapper
 
 		public override int GetHashCode()
 		{
-			var hashCode = 1943392893;
+#pragma warning disable U2U1000 // Local variable can be inlined or declared constant
+#pragma warning disable RCS1118 // Mark local variable as constant.
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+#pragma warning restore RCS1118 // Mark local variable as constant.
+#pragma warning restore U2U1000 // Local variable can be inlined or declared constant
+			int hashCode = 1943392893;
 			// This is a non-issue because this is a structure, not a class.
-#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
-			hashCode = (hashCode * -1521134295) + bypass_filtering.GetHashCode();
-			hashCode = (hashCode * -1521134295) + no_fancy_upsampling.GetHashCode();
-			hashCode = (hashCode * -1521134295) + use_cropping.GetHashCode();
-			hashCode = (hashCode * -1521134295) + crop_left.GetHashCode();
-			hashCode = (hashCode * -1521134295) + crop_top.GetHashCode();
-			hashCode = (hashCode * -1521134295) + crop_width.GetHashCode();
-			hashCode = (hashCode * -1521134295) + crop_height.GetHashCode();
-			hashCode = (hashCode * -1521134295) + use_scaling.GetHashCode();
-			hashCode = (hashCode * -1521134295) + scaled_width.GetHashCode();
-			hashCode = (hashCode * -1521134295) + scaled_height.GetHashCode();
-			hashCode = (hashCode * -1521134295) + use_threads.GetHashCode();
-			hashCode = (hashCode * -1521134295) + dithering_strength.GetHashCode();
-			hashCode = (hashCode * -1521134295) + flip.GetHashCode();
-			hashCode = (hashCode * -1521134295) + alpha_dithering_strength.GetHashCode();
-#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+#pragma warning disable RECS0025 // Non read-only field referenced in 'GetHashCode()'
+			hashCode = (hashCode * hashKey) + bypass_filtering;
+			hashCode = (hashCode * hashKey) + no_fancy_upsampling;
+			hashCode = (hashCode * hashKey) + use_cropping;
+			hashCode = (hashCode * hashKey) + crop_left;
+			hashCode = (hashCode * hashKey) + crop_top;
+			hashCode = (hashCode * hashKey) + crop_width;
+			hashCode = (hashCode * hashKey) + crop_height;
+			hashCode = (hashCode * hashKey) + use_scaling;
+			hashCode = (hashCode * hashKey) + scaled_width;
+			hashCode = (hashCode * hashKey) + scaled_height;
+			hashCode = (hashCode * hashKey) + use_threads;
+			hashCode = (hashCode * hashKey) + dithering_strength;
+			hashCode = (hashCode * hashKey) + flip;
+			hashCode = (hashCode * hashKey) + alpha_dithering_strength;
+#pragma warning restore RECS0025 // Non read-only field referenced in 'GetHashCode()'
 			return hashCode;
 		}
 
@@ -2308,14 +2322,20 @@ namespace WebPWrapper
 
 		public override int GetHashCode()
 		{
-			var hashCode = 1439674596;
-#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
-			hashCode = (hashCode * -1521134295) + Width.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Height.GetHashCode();
-			hashCode = (hashCode * -1521134295) + HasAlpha.GetHashCode();
-			hashCode = (hashCode * -1521134295) + IsAnimated.GetHashCode();
-			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Format);
-#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+#pragma warning disable U2U1000 // Local variable can be inlined or declared constant
+#pragma warning disable RCS1118 // Mark local variable as constant.
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+#pragma warning restore RCS1118 // Mark local variable as constant.
+#pragma warning restore U2U1000 // Local variable can be inlined or declared constant
+			int hashCode = 1439674596;
+			// This is a non-issue because this is a structure, not a class.
+#pragma warning disable RECS0025 // Non read-only field referenced in 'GetHashCode()'
+			hashCode = (hashCode * hashKey) + Width.GetHashCode();
+			hashCode = (hashCode * hashKey) + Height.GetHashCode();
+			hashCode = (hashCode * hashKey) + HasAlpha.GetHashCode();
+			hashCode = (hashCode * hashKey) + IsAnimated.GetHashCode();
+			hashCode = (hashCode * hashKey) + EqualityComparer<string>.Default.GetHashCode(Format);
+#pragma warning restore RECS0025 // Non read-only field referenced in 'GetHashCode()'
 			return hashCode;
 		}
 
