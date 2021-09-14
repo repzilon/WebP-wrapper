@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebPTest", "WebPTest\WebPTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebPWrapper", "WebPWrapper\WebPWrapper.csproj", "{DAF13BD3-52B9-4FCB-89E9-49DEDF5E0F20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebP42", "WebP42\WebP42.csproj", "{D67AB839-499B-4606-827E-07BE425C8D26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{DAF13BD3-52B9-4FCB-89E9-49DEDF5E0F20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAF13BD3-52B9-4FCB-89E9-49DEDF5E0F20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAF13BD3-52B9-4FCB-89E9-49DEDF5E0F20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D67AB839-499B-4606-827E-07BE425C8D26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D67AB839-499B-4606-827E-07BE425C8D26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D67AB839-499B-4606-827E-07BE425C8D26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D67AB839-499B-4606-827E-07BE425C8D26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

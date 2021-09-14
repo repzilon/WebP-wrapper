@@ -753,7 +753,6 @@ namespace WebPWrapper
 			BitmapData bmpData = null;
 			IntPtr ptrStats = IntPtr.Zero;
 			GCHandle pinnedArrayHandle = new GCHandle();
-			int dataWebpSize;
 			try {
 				//Validate the configuration
 				if (UnsafeNativeMethods.WebPValidateConfig(ref config) != 1) {
@@ -789,19 +788,13 @@ namespace WebPWrapper
 					if (result != 1) {
 						throw new Exception("Can´t allocate memory in WebPPictureImportBGRA");
 					}
-
 					wpic.colorspace = (uint)WEBP_CSP_MODE.MODE_bgrA;
-					dataWebpSize = bmp.Width * bmp.Height * 32;
-					dataWebp = new byte[bmp.Width * bmp.Height * 32];                //Memory for WebP output
 				} else {
 					//Put the bitmap contents in WebPPicture instance
 					int result = UnsafeNativeMethods.WebPPictureImportBGR(ref wpic, bmpData.Scan0, bmpData.Stride);
 					if (result != 1) {
 						throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
 					}
-
-					dataWebpSize = bmp.Width * bmp.Height * 24;
-
 				}
 
 				//Set up statistics of compression
@@ -812,13 +805,7 @@ namespace WebPWrapper
 					wpic.stats = ptrStats;
 				}
 
-				//Memory for WebP output
-
-				if (dataWebpSize > 2147483591) {
-					dataWebpSize = 2147483591;
-				}
-
-				dataWebp = new byte[bmp.Width * bmp.Height * 32];
+				dataWebp = new byte[Math.Max(1024, checked(pixelMap.Width * pixelMap.Height * 2))];
 				pinnedArrayHandle = GCHandle.Alloc(dataWebp, GCHandleType.Pinned);
 				IntPtr initPtr = pinnedArrayHandle.AddrOfPinnedObject();
 				wpic.custom_ptr = initPtr;
@@ -842,6 +829,13 @@ namespace WebPWrapper
 				//Copy webpData to rawWebP
 				int size = (int)((long)wpic.custom_ptr - (long)initPtr);
 				rawWebP = new byte[size];
+#if (DEBUG)
+				if (dataWebp.Length > (size * 5)) {
+					Console.Error.WriteLine("Buffer overallocation for dataWebp: needed {0:n0} allocated {1:n0}", size, dataWebp.Length);
+				} else if (dataWebp.Length < size) {
+					Console.Error.WriteLine("Buffer under allocation for dataWebp: needed {0:n0} allocated {1:n0} for {2}x{3}", size, dataWebp.Length, pixelMap.Width, pixelMap.Height);
+				}
+#endif
 				Array.Copy(dataWebp, rawWebP, size);
 
 				//Remove compression data
@@ -893,9 +887,8 @@ namespace WebPWrapper
 
 	#region | Import libwebp functions |
 	[SuppressUnmanagedCodeSecurityAttribute]
-	internal sealed partial class UnsafeNativeMethods
+	internal static class UnsafeNativeMethods
 	{
-
 		[DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
 		internal static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 

@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 #endregion
-[assembly: AssemblyTitle("WebP Wrapper for .NET")]
-[assembly: AssemblyDescription("WebP Wrapper for .NET")]
+[assembly: AssemblyTitle("WebP42")]
+[assembly: AssemblyDescription("Optimizing Batch WebP converter")]
 #if (DEBUG)
 [assembly: AssemblyConfiguration("Debug")]
 #else
@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("WebP-Wrapper")]
-[assembly: AssemblyCopyright("Copyright © 2012-2020 Jose M. Piñeiro, 2021 René Rhéaume")]
+[assembly: AssemblyCopyright("Copyright © 2021 René Rhéaume")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,7 +29,7 @@ using System.Runtime.InteropServices;
 #endregion
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
-[assembly: Guid("daf13bd3-52b9-4fcb-89e9-49dedf5e0f20")]
+[assembly: Guid("d67ab839-499b-4606-827e-07be425c8d26")]
 
 #region Version Information
 // Version information for an assembly consists of the following four values:
@@ -43,5 +43,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 #endregion
-[assembly: AssemblyVersion("1.0.0.9")]
-[assembly: AssemblyFileVersion("1.0.0.9")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
