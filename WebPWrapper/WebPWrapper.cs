@@ -32,22 +32,22 @@ using System.Runtime.InteropServices;
 
 namespace WebPWrapper
 {
-	public sealed class WebP
+	public static class WebP
 	{
 		private const int WEBP_MAX_DIMENSION = 16383;
 		#region | Public Decode Functions |
 		/// <summary>Read a WebP file</summary>
 		/// <param name="pathFileName">WebP file to load</param>
 		/// <returns>Bitmap with the WebP image</returns>
-		public Bitmap Load(string pathFileName)
+		public static Bitmap Load(string pathFileName)
 		{
-			return this.Decode(File.ReadAllBytes(pathFileName));
+			return Decode(File.ReadAllBytes(pathFileName));
 		}
 
 		/// <summary>Decode a WebP image</summary>
 		/// <param name="rawWebP">The data to uncompress</param>
 		/// <returns>Bitmap with the WebP image</returns>
-		public Bitmap Decode(byte[] rawWebP)
+		public static Bitmap Decode(byte[] rawWebP)
 		{
 			Bitmap pixelMap = null;
 			BitmapData bmpData = null;
@@ -55,7 +55,7 @@ namespace WebPWrapper
 
 			try {
 				//Get image width and height
-				WebPInfo info = this.GetInfo(rawWebP);
+				WebPInfo info = GetInfo(rawWebP);
 
 				//Create a BitmapData and Lock all pixels to be written
 				pixelMap = new Bitmap(info.Width, info.Height, info.HasAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb);
@@ -91,7 +91,7 @@ namespace WebPWrapper
 		/// <param name="rawWebP">the data to uncompress</param>
 		/// <param name="options">Options for advanced decode</param>
 		/// <returns>Bitmap with the WebP image</returns>
-		public Bitmap Decode(byte[] rawWebP, WebPDecoderOptions options)
+		public static Bitmap Decode(byte[] rawWebP, WebPDecoderOptions options)
 		{
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
@@ -185,7 +185,7 @@ namespace WebPWrapper
 		/// <param name="width">Wanted width of thumbnail</param>
 		/// <param name="height">Wanted height of thumbnail</param>
 		/// <returns>Bitmap with the WebP thumbnail in 24bpp</returns>
-		public Bitmap GetThumbnailFast(byte[] rawWebP, int width, int height)
+		public static Bitmap GetThumbnailFast(byte[] rawWebP, int width, int height)
 		{
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
@@ -246,7 +246,7 @@ namespace WebPWrapper
 		/// <param name="width">Wanted width of thumbnail</param>
 		/// <param name="height">Wanted height of thumbnail</param>
 		/// <returns>Bitmap with the WebP thumbnail</returns>
-		public Bitmap GetThumbnailQuality(byte[] rawWebP, int width, int height)
+		public static Bitmap GetThumbnailQuality(byte[] rawWebP, int width, int height)
 		{
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
@@ -318,17 +318,17 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the WebP image</param>
 		/// <param name="pathFileName">The file to write</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
-		public void Save(Bitmap pixelMap, string pathFileName, int quality = 75)
+		public static void Save(Bitmap pixelMap, string pathFileName, int quality = 75)
 		{
 			//Encode in webP format and Write webP file
-			File.WriteAllBytes(pathFileName, this.EncodeLossy(pixelMap, quality));
+			File.WriteAllBytes(pathFileName, EncodeLossy(pixelMap, quality));
 		}
 
 		/// <summary>Lossy encoding bitmap to WebP (Simple encoding API)</summary>
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossy(Bitmap pixelMap, int quality = 75)
+		public static byte[] EncodeLossy(Bitmap pixelMap, int quality = 75)
 		{
 			// test pixelMap
 			if (pixelMap.Width == 0 || pixelMap.Height == 0) {
@@ -382,7 +382,7 @@ namespace WebPWrapper
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
+		public static byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
 		{
 			//Initialize configuration structure
 			var config = new WebPConfig();
@@ -416,13 +416,13 @@ namespace WebPWrapper
 				config.preprocessing = 3;
 			}
 
-			return this.AdvancedEncode(pixelMap, config, info, out stats);
+			return AdvancedEncode(pixelMap, config, info, out stats);
 		}
 
 		/// <summary>Lossless encoding bitmap to WebP (Simple encoding API)</summary>
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossless(Bitmap pixelMap)
+		public static byte[] EncodeLossless(Bitmap pixelMap)
 		{
 			//test pixelMap
 			if (pixelMap.Width == 0 || pixelMap.Height == 0) {
@@ -470,7 +470,7 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossless(Bitmap pixelMap, int speed)
+		public static byte[] EncodeLossless(Bitmap pixelMap, int speed)
 		{
 			//Initialize configuration structure
 			var config = new WebPConfig();
@@ -501,18 +501,18 @@ namespace WebPWrapper
 			config.exact = 0;
 
 			WebPAuxStats stats;
-			return this.AdvancedEncode(pixelMap, config, false, out stats);
+			return AdvancedEncode(pixelMap, config, false, out stats);
 		}
 
-		public byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed = 9)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed = 9)
 		{
 			WebPAuxStats dummy;
-			return this.EncodeNearLossless(pixelMap, quality, speed, false, out dummy);
+			return EncodeNearLossless(pixelMap, quality, speed, false, out dummy);
 		}
 
-		public byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, out WebPAuxStats stats)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, out WebPAuxStats stats)
 		{
-			return this.EncodeNearLossless(pixelMap, quality, speed, true, out stats);
+			return EncodeNearLossless(pixelMap, quality, speed, true, out stats);
 		}
 
 		/// <summary>Near lossless encoding image in bitmap</summary>
@@ -520,7 +520,7 @@ namespace WebPWrapper
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compress data</returns>
-		public byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
 		{
 			//test DLL version
 			if (UnsafeNativeMethods.WebPGetDecoderVersion() <= 1082) {
@@ -546,14 +546,14 @@ namespace WebPWrapper
 			config.use_sharp_yuv = 1;
 			config.exact = 0;
 
-			return this.AdvancedEncode(pixelMap, config, info, out stats);
+			return AdvancedEncode(pixelMap, config, info, out stats);
 		}
 		#endregion
 
 		#region | Another Public Functions |
 		/// <summary>Get the libwebp version</summary>
 		/// <returns>Version of library</returns>
-		public string GetVersion()
+		public static string GetVersion()
 		{
 			uint v = (uint)UnsafeNativeMethods.WebPGetDecoderVersion();
 			var revision = v % 256;
@@ -564,7 +564,7 @@ namespace WebPWrapper
 
 		/// <summary>Get info of WEBP data</summary>
 		/// <param name="rawWebP">The data of WebP</param>
-		public WebPInfo GetInfo(byte[] rawWebP)
+		public static WebPInfo GetInfo(byte[] rawWebP)
 		{
 			VP8StatusCode result;
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
@@ -604,7 +604,7 @@ namespace WebPWrapper
 		/// <param name="reference">Reference picture</param>
 		/// <param name="metric_type">0 = PSNR, 1 = SSIM, 2 = LSIM</param>
 		/// <returns>dB in the Y/U/V/Alpha/All order</returns>
-		public float[] GetPictureDistortion(Bitmap source, Bitmap reference, int metric_type)
+		public static float[] GetPictureDistortion(Bitmap source, Bitmap reference, int metric_type)
 		{
 			var wpicSource = new WebPPicture();
 			var wpicReference = new WebPPicture();
@@ -716,7 +716,7 @@ namespace WebPWrapper
 		/// <param name="config">Configuration for encode</param>
 		/// <param name="info">True if need encode info.</param>
 		/// <returns>Compressed data</returns>
-		private byte[] AdvancedEncode(Bitmap pixelMap, WebPConfig config, bool info, out WebPAuxStats stats)
+		private static byte[] AdvancedEncode(Bitmap pixelMap, WebPConfig config, bool info, out WebPAuxStats stats)
 		{
 			byte[] rawWebP = null;
 			byte[] dataWebp = null;
@@ -782,7 +782,7 @@ namespace WebPWrapper
 				wpic.custom_ptr = initPtr;
 
 				// Set up a byte-writing method (write-to-memory, in this case)
-				UnsafeNativeMethods.OnCallback = new UnsafeNativeMethods.WebPMemoryWrite(this.MyWriter);
+				UnsafeNativeMethods.OnCallback = new UnsafeNativeMethods.WebPMemoryWrite(MyWriter);
 				wpic.writer = Marshal.GetFunctionPointerForDelegate(UnsafeNativeMethods.OnCallback);
 
 				//compress the input samples
@@ -840,7 +840,7 @@ namespace WebPWrapper
 			}
 		}
 
-		private int MyWriter([In] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
+		private static int MyWriter([In] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
 		{
 			UnsafeNativeMethods.CopyMemory(picture.custom_ptr, data, (uint)data_size);
 			//picture.custom_ptr = IntPtr.Add(picture.custom_ptr, (int)data_size);   //Only in .NET > 4.0

@@ -97,11 +97,10 @@ namespace WebP42
 					throw new NotSupportedException("Animated images are not supported yet by WebP42.");
 				}
 
-				WebP codec = new WebP();
 				CompressionTrial[] losslessTrials = new CompressionTrial[9 + 1];
 				for (int i = 0; i <= 9; i++) {
 					DateTime dtmStart = DateTime.UtcNow;
-					byte[] bytarCoded = codec.EncodeLossless(bmpGdiplus, i);
+					byte[] bytarCoded = WebP.EncodeLossless(bmpGdiplus, i);
 					TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
 					losslessTrials[i] = new CompressionTrial() { CompressedData = bytarCoded, CompressionLevel = (byte)i, TimeTook = tsDuration };
 				}
