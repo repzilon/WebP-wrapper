@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using WebPWrapper;
 
 #pragma warning disable IDE0007 // Use implicit type
@@ -18,6 +19,14 @@ namespace WebP42
 		public byte[] CompressedData;
 
 		public TimeSpan TimeTook;
+
+#if (LossyExperiment)
+		public byte Quality;
+
+		public float PictureSsim;
+
+		public float AlphaSsim;
+#endif
 	}
 
 	internal static class Program
@@ -97,6 +106,14 @@ namespace WebP42
 					throw new NotSupportedException("Animated images are not supported yet by WebP42.");
 				}
 
+#if (LossyExperiment)
+				WebPAuxStats lossyStats;
+				List<CompressionTrial> lossyTrials = new List<CompressionTrial>();
+				CompressionTrial ctLossy100 = TryLossy(bmpGdiplus, 100, lossyTrials, out lossyStats);
+				bool blnCandidateForLossy = (ctLossy100.PictureSsim > 42) && (ctLossy100.AlphaSsim > 42);
+				File.WriteAllBytes(inputPath + ".lossy100.webp", ctLossy100.CompressedData);
+#endif
+
 				CompressionTrial[] losslessTrials = new CompressionTrial[9 + 1];
 				for (int i = 0; i <= 9; i++) {
 					DateTime dtmStart = DateTime.UtcNow;
@@ -104,22 +121,37 @@ namespace WebP42
 					TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
 					losslessTrials[i] = new CompressionTrial() { CompressedData = bytarCoded, CompressionLevel = (byte)i, TimeTook = tsDuration };
 				}
-				IEnumerable<CompressionTrial> colSmaller = SmallerThanOriginal(lngOrigSize, losslessTrials);
-				CompressionTrial? nctSmallest = SmallestOf(colSmaller);
 
-				if (nctSmallest.HasValue) {
-					IEnumerable<CompressionTrial> colMin = SizeEquals(nctSmallest.Value.CompressedData.Length, colSmaller);
-					CompressionTrial nctFastest = FastestOf(colMin).Value;
+				CompressionTrial? nctBestLossless = FastestOfSmallest(lngOrigSize, losslessTrials);
 
+#if (LossyExperiment)
+				if (blnCandidateForLossy) {
+					CompressionTrial ctNew = new CompressionTrial();
+					for (byte q = 99; !((q <= 0) || ((ctNew.PictureSsim != 0) && (ctNew.PictureSsim < 42))); q--) {
+						ctNew = TryLossy(bmpGdiplus, q, lossyTrials, out lossyStats);
+					}
+					if (lossyTrials.Count >= 2) {
+						var ctBestLossy = lossyTrials[lossyTrials.Count - 2];
+						var q = ctBestLossy.Quality;
+						lossyTrials.Clear();
+						for (byte s = 0; s <= 9; s++) {
+							ctNew = TryLossy(bmpGdiplus, q, s, lossyTrials, out lossyStats);
+						}
+						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, lossyTrials);
+					}
+				}
+#endif
+
+				if (nctBestLossless.HasValue) {
 					string strWebpFile = OutputFilePath(inputPath);
-					File.WriteAllBytes(strWebpFile, nctFastest.CompressedData);
-					int intWebpSize = nctFastest.CompressedData.Length;
+					File.WriteAllBytes(strWebpFile, nctBestLossless.Value.CompressedData);
+					int intWebpSize = nctBestLossless.Value.CompressedData.Length;
 
 					totalOriginalSize += lngOrigSize;
 					totalOptimizedSize += intWebpSize;
 					totalFiles++;
 					Console.WriteLine("{0,10} {1,10} {2,3}% {3}\t(lossless -z {4})", lngOrigSize, intWebpSize,
-					 ComputePercentage(lngOrigSize, intWebpSize), RelativePath(strWebpFile, directory), nctFastest.CompressionLevel);
+					 ComputePercentage(lngOrigSize, intWebpSize), RelativePath(strWebpFile, directory), nctBestLossless.Value.CompressionLevel);
 				} else {
 					totalOriginalSize += lngOrigSize;
 					totalOptimizedSize += lngOrigSize;
@@ -140,6 +172,26 @@ namespace WebP42
 				}
 			}
 		}
+
+#if (LossyExperiment)
+		private static CompressionTrial TryLossy(Bitmap original, byte quality, ICollection<CompressionTrial> trialInfo, out WebPAuxStats emptyReusableStats)
+		{
+			return TryLossy(original, quality, 9, trialInfo, out emptyReusableStats);
+		}
+
+		private static CompressionTrial TryLossy(Bitmap original, byte quality, byte speed, ICollection<CompressionTrial> trialInfo, out WebPAuxStats emptyReusableStats)
+		{
+			DateTime dtmStart = DateTime.UtcNow;
+			byte[] bytarLossy = WebP.EncodeLossy(original, quality, speed, false, out emptyReusableStats);
+			TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
+			using (Bitmap bmpLossy = WebP.Decode(bytarLossy)) {
+				float[] sngarSsim = WebP.GetPictureDistortion(bmpLossy, original, 1);
+				CompressionTrial trial = new CompressionTrial() { CompressedData = bytarLossy, CompressionLevel = speed, Quality = quality, TimeTook = tsDuration, PictureSsim = sngarSsim[4], AlphaSsim = sngarSsim[3] };
+				trialInfo.Add(trial);
+				return trial;
+			}
+		}
+#endif
 
 		private static string RelativePath(string fullPath, string basePath)
 		{
@@ -214,44 +266,38 @@ namespace WebP42
 			return false;
 		}
 
-		private static CompressionTrial? SmallestOf(IEnumerable<CompressionTrial> colSmaller)
+		private static CompressionTrial? FastestOfSmallest(long originalSize, IList<CompressionTrial> trials)
 		{
-			CompressionTrial? nctSmallest = null;
-			foreach (CompressionTrial trial in colSmaller) {
-				if (!nctSmallest.HasValue || (trial.CompressedData.Length < nctSmallest.Value.CompressedData.Length)) {
-					nctSmallest = trial;
+			int c = trials.Count;
+			bool[] blnarKeep = new bool[c];
+			int i;
+			for (i = 0; i < c; i++) {
+				blnarKeep[i] = trials[i].CompressedData.Length < originalSize;
+			}
+			int intSmallestSize = Int32.MaxValue;
+			for (i = 0; i < c; i++) {
+				if (blnarKeep[i]) {
+					int l = trials[i].CompressedData.Length;
+					if (l < intSmallestSize) {
+						intSmallestSize = l;
+					}
 				}
 			}
-			return nctSmallest;
-		}
-
-		private static CompressionTrial? FastestOf(IEnumerable<CompressionTrial> colSmaller)
-		{
-			CompressionTrial? nctSmallest = null;
-			foreach (CompressionTrial trial in colSmaller) {
-				if (!nctSmallest.HasValue || (trial.CompressionLevel < nctSmallest.Value.CompressionLevel)) {
-					nctSmallest = trial;
+			if (intSmallestSize < Int32.MaxValue) {
+				for (i = 0; i < c; i++) {
+					blnarKeep[i] &= trials[i].CompressedData.Length == intSmallestSize;
 				}
-			}
-			return nctSmallest;
-		}
-
-		private static IEnumerable<CompressionTrial> SmallerThanOriginal(long originalSize, CompressionTrial[] trials)
-		{
-			for (int i = 0; i < trials.Length; i++) {
-				var x = trials[i];
-				if (x.CompressedData.Length < originalSize) {
-					yield return x;
+				CompressionTrial? nctFastest = null;
+				for (i = 0; i < c; i++) {
+					if (blnarKeep[i]) {
+						if (!nctFastest.HasValue || (trials[i].CompressionLevel < nctFastest.Value.CompressionLevel)) {
+							nctFastest = trials[i];
+						}
+					}
 				}
-			}
-		}
-
-		private static IEnumerable<CompressionTrial> SizeEquals(int size, IEnumerable<CompressionTrial> trials)
-		{
-			foreach (CompressionTrial x in trials) {
-				if (x.CompressedData.Length == size) {
-					yield return x;
-				}
+				return nctFastest;
+			} else {
+				return null;
 			}
 		}
 

@@ -381,6 +381,8 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
+		/// <param name="info">Ask for compression statistics</param>
+		/// <param name="stats">Compression statistics, filled when info is true</param>
 		/// <returns>Compressed data</returns>
 		public static byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
 		{
@@ -388,7 +390,7 @@ namespace WebPWrapper
 			var config = new WebPConfig();
 
 			//Set compression parameters
-			if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, 75) == 0) {
+			if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, quality) == 0) {
 				throw new Exception("Can´t configure preset");
 			}
 
@@ -1408,9 +1410,9 @@ namespace WebPWrapper
 		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
 		private static extern int WebPPictureDistortion_x64(ref WebPPicture srcPicture, ref WebPPicture refPicture, int metric_type, IntPtr pResult);
 	}
-	#endregion
+#endregion
 
-	#region | Predefined |
+#region | Predefined |
 	/// <summary>Enumerate some predefined settings for WebPConfig, depending on the type of source picture. These presets are used when calling WebPConfigPreset().</summary>
 	internal enum WebPPreset
 	{
@@ -1581,9 +1583,9 @@ namespace WebPWrapper
 		STATE_DONE,
 		STATE_ERROR
 	}
-	#endregion
+#endregion
 
-	#region | libwebp structs |
+#region | libwebp structs |
 	/// <summary>Features gathered from the bit stream</summary>
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct WebPBitstreamFeatures
@@ -2349,5 +2351,5 @@ namespace WebPWrapper
 			return !(info1 == info2);
 		}
 	}
-	#endregion
+#endregion
 }
