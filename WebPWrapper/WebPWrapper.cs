@@ -381,6 +381,8 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
+		/// <param name="info">Ask for compression statistics</param>
+		/// <param name="stats">Compression statistics, filled when info is true</param>
 		/// <returns>Compressed data</returns>
 		public static byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
 		{
@@ -388,7 +390,7 @@ namespace WebPWrapper
 			var config = new WebPConfig();
 
 			//Set compression parameters
-			if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, 75) == 0) {
+			if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, quality) == 0) {
 				throw new Exception("Can´t configure preset");
 			}
 
