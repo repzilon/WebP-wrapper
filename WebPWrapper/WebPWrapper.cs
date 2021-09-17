@@ -5,21 +5,21 @@
 // Bitmap Load(string pathFileName) - Load a WebP file in bitmap.
 // Bitmap Decode(byte[] rawWebP) - Decode WebP data (rawWebP) to bitmap.
 // Bitmap Decode(byte[] rawWebP, WebPDecoderOptions options) - Decode WebP data (rawWebP) to bitmap using 'options'.
-// Bitmap GetThumbnailFast(byte[] rawWebP, int width, int height) - Get a thumbnail from WebP data (rawWebP) with dimensions 'width x height'. Fast mode.
-// Bitmap GetThumbnailQuality(byte[] rawWebP, int width, int height) - Fast get a thumbnail from WebP data (rawWebP) with dimensions 'width x height'. Quality mode.
+// Bitmap GetThumbnailFast(byte[] rawWebP, short width, short height) - Get a thumbnail from WebP data (rawWebP) with dimensions 'width x height'. Fast mode.
+// Bitmap GetThumbnailQuality(byte[] rawWebP, short width, short height) - Fast get a thumbnail from WebP data (rawWebP) with dimensions 'width x height'. Quality mode.
 // 
 // Encode Functions:
-// Save(Bitmap pixelMap, string pathFileName, int quality) - Save bitmap with quality lost to WebP file. Optionally select 'quality'.
-// byte[] EncodeLossy(Bitmap pixelMap, int quality) - Encode bitmap with quality lost to WebP byte array. Optionally select 'quality'.
-// byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info) - Encode bitmap with quality lost to WebP byte array. Select 'quality', 'speed' and optionally select 'info'.
+// Save(Bitmap pixelMap, string pathFileName, byte quality) - Save bitmap with quality lost to WebP file. Optionally select 'quality'.
+// byte[] EncodeLossy(Bitmap pixelMap, byte quality) - Encode bitmap with quality lost to WebP byte array. Optionally select 'quality'.
+// byte[] EncodeLossy(Bitmap pixelMap, byte quality, byte speed, bool info) - Encode bitmap with quality lost to WebP byte array. Select 'quality', 'speed' and optionally select 'info'.
 // byte[] EncodeLossless(Bitmap pixelMap) - Encode bitmap without quality lost to WebP byte array. 
-// byte[] EncodeLossless(Bitmap pixelMap, int speed, bool info = false) - Encode bitmap without quality lost to WebP byte array. Select 'speed'. 
-// byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed = 9, bool info = false) - Encode bitmap with a near lossless method to WebP byte array. Select 'quality', 'speed' and optionally select 'info'.
+// byte[] EncodeLossless(Bitmap pixelMap, byte speed, bool info = false) - Encode bitmap without quality lost to WebP byte array. Select 'speed'. 
+// byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed = 9, bool info = false) - Encode bitmap with a near lossless method to WebP byte array. Select 'quality', 'speed' and optionally select 'info'.
 // 
 // Another functions:
-// string GetVersion() - Get the library version
-// GetInfo(byte[] rawWebP, out int width, out int height, out bool has_alpha, out bool has_animation, out string format) - Get information of WEBP data
-// float[] PictureDistortion(Bitmap source, Bitmap reference, int metric_type) - Get PSNR, SSIM or LSIM distortion metric between two pictures
+// Version GetVersion() - Get the library version
+// WebPInfo GetInfo(byte[] rawWebP) - Get information of WEBP data
+// float[] PictureDistortion(Bitmap source, Bitmap reference, DistorsionMetric metricType) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using System;
 using System.Collections.Generic;
@@ -185,7 +185,7 @@ namespace WebPWrapper
 		/// <param name="width">Wanted width of thumbnail</param>
 		/// <param name="height">Wanted height of thumbnail</param>
 		/// <returns>Bitmap with the WebP thumbnail in 24bpp</returns>
-		public static Bitmap GetThumbnailFast(byte[] rawWebP, int width, int height)
+		public static Bitmap GetThumbnailFast(byte[] rawWebP, short width, short height)
 		{
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
@@ -246,7 +246,7 @@ namespace WebPWrapper
 		/// <param name="width">Wanted width of thumbnail</param>
 		/// <param name="height">Wanted height of thumbnail</param>
 		/// <returns>Bitmap with the WebP thumbnail</returns>
-		public static Bitmap GetThumbnailQuality(byte[] rawWebP, int width, int height)
+		public static Bitmap GetThumbnailQuality(byte[] rawWebP, short width, short height)
 		{
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
@@ -318,7 +318,7 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the WebP image</param>
 		/// <param name="pathFileName">The file to write</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
-		public static void Save(Bitmap pixelMap, string pathFileName, int quality = 75)
+		public static void Save(Bitmap pixelMap, string pathFileName, byte quality = 75)
 		{
 			//Encode in webP format and Write webP file
 			File.WriteAllBytes(pathFileName, EncodeLossy(pixelMap, quality));
@@ -328,7 +328,7 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <returns>Compressed data</returns>
-		public static byte[] EncodeLossy(Bitmap pixelMap, int quality = 75)
+		public static byte[] EncodeLossy(Bitmap pixelMap, byte quality = 75)
 		{
 			// test pixelMap
 			if (pixelMap.Width == 0 || pixelMap.Height == 0) {
@@ -384,7 +384,7 @@ namespace WebPWrapper
 		/// <param name="info">Ask for compression statistics</param>
 		/// <param name="stats">Compression statistics, filled when info is true</param>
 		/// <returns>Compressed data</returns>
-		public static byte[] EncodeLossy(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
+		public static byte[] EncodeLossy(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
 			//Initialize configuration structure
 			var config = new WebPConfig();
@@ -472,7 +472,7 @@ namespace WebPWrapper
 		/// <param name="pixelMap">Bitmap with the image</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compressed data</returns>
-		public static byte[] EncodeLossless(Bitmap pixelMap, int speed)
+		public static byte[] EncodeLossless(Bitmap pixelMap, byte speed)
 		{
 			//Initialize configuration structure
 			var config = new WebPConfig();
@@ -506,13 +506,13 @@ namespace WebPWrapper
 			return AdvancedEncode(pixelMap, config, false, out stats);
 		}
 
-		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed = 9)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed = 9)
 		{
 			WebPAuxStats dummy;
 			return EncodeNearLossless(pixelMap, quality, speed, false, out dummy);
 		}
 
-		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, out WebPAuxStats stats)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed, out WebPAuxStats stats)
 		{
 			return EncodeNearLossless(pixelMap, quality, speed, true, out stats);
 		}
@@ -522,7 +522,7 @@ namespace WebPWrapper
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compress data</returns>
-		public static byte[] EncodeNearLossless(Bitmap pixelMap, int quality, int speed, bool info, out WebPAuxStats stats)
+		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
 			//test DLL version
 			if (UnsafeNativeMethods.WebPGetDecoderVersion() <= 1082) {
@@ -555,13 +555,13 @@ namespace WebPWrapper
 		#region | Another Public Functions |
 		/// <summary>Get the libwebp version</summary>
 		/// <returns>Version of library</returns>
-		public static string GetVersion()
+		public static Version GetVersion()
 		{
-			uint v = (uint)UnsafeNativeMethods.WebPGetDecoderVersion();
+			int v = UnsafeNativeMethods.WebPGetDecoderVersion();
 			var revision = v % 256;
 			var minor = (v >> 8) % 256;
 			var major = (v >> 16) % 256;
-			return major + "." + minor + "." + revision;
+			return new Version(major, minor, revision);
 		}
 
 		/// <summary>Get info of WEBP data</summary>
@@ -604,9 +604,9 @@ namespace WebPWrapper
 		/// <summary>Compute PSNR, SSIM or LSIM distortion metric between two pictures. Warning: this function is rather CPU-intensive.</summary>
 		/// <param name="source">Picture to measure</param>
 		/// <param name="reference">Reference picture</param>
-		/// <param name="metric_type">0 = PSNR, 1 = SSIM, 2 = LSIM</param>
+		/// <param name="metricType">distortion metric type: PSNR, SSIM or LSIM</param>
 		/// <returns>dB in the Y/U/V/Alpha/All order</returns>
-		public static float[] GetPictureDistortion(Bitmap source, Bitmap reference, int metric_type)
+		public static float[] GetPictureDistortion(Bitmap source, Bitmap reference, DistorsionMetric metricType)
 		{
 			var wpicSource = new WebPPicture();
 			var wpicReference = new WebPPicture();
@@ -624,7 +624,7 @@ namespace WebPWrapper
 					throw new Exception("Reference picture is void");
 				}
 
-				if (metric_type > 2) {
+				if (metricType > DistorsionMetric.LightweightSimilarity) {
 					throw new Exception("Bad metric_type. Use 0 = PSNR, 1 = SSIM, 2 = LSIM");
 				}
 
@@ -681,7 +681,7 @@ namespace WebPWrapper
 
 				//Measure
 				IntPtr ptrResult = pinnedResult.AddrOfPinnedObject();
-				if (UnsafeNativeMethods.WebPPictureDistortion(ref wpicSource, ref wpicReference, metric_type, ptrResult) != 1) {
+				if (UnsafeNativeMethods.WebPPictureDistortion(ref wpicSource, ref wpicReference, (int)metricType, ptrResult) != 1) {
 					throw new Exception("Can´t measure.");
 				}
 
@@ -1583,6 +1583,13 @@ namespace WebPWrapper
 		STATE_DONE,
 		STATE_ERROR
 	}
+
+	public enum DistorsionMetric : byte
+	{
+		PeakSignalNoiseRatio = 0,
+		StructuralSimilarity,
+		LightweightSimilarity
+	}
 	#endregion
 
 	#region | libwebp structs |
@@ -2298,7 +2305,9 @@ namespace WebPWrapper
 			return !(options1 == options2);
 		}
 	}
+	#endregion
 
+	#region | WebP-Wrapper structs |
 	[StructLayout(LayoutKind.Auto)]
 	public struct WebPInfo : IEquatable<WebPInfo>
 	{

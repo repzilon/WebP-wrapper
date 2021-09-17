@@ -114,11 +114,11 @@ namespace WebP42
 #endif
 
 				CompressionTrial[] losslessTrials = new CompressionTrial[9 + 1];
-				for (int i = 0; i <= 9; i++) {
+				for (byte i = 0; i <= 9; i++) {
 					DateTime dtmStart = DateTime.UtcNow;
 					byte[] bytarCoded = WebP.EncodeLossless(bmpGdiplus, i);
 					TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
-					losslessTrials[i] = new CompressionTrial() { CompressedData = bytarCoded, CompressionLevel = (byte)i, TimeTook = tsDuration };
+					losslessTrials[i] = new CompressionTrial() { CompressedData = bytarCoded, CompressionLevel = i, TimeTook = tsDuration };
 				}
 
 				CompressionTrial? nctBestLossless = FastestOfSmallest(lngOrigSize, losslessTrials);
