@@ -53,11 +53,13 @@ namespace WebP42
 
 			try {
 				string strWorkDir = Directory.GetCurrentDirectory();
+				// TODO : Help screen
 				if ((args == null) || (args.Length < 1) || (args[0].Length < 1)) {
 					ProcessDirectory(strWorkDir, blnRecursive);
 				} else {
 					int c = 0;
 					for (int i = 0; i < args.Length; i++) {
+						// TODO : change references in files, activated by a command line parameter
 						string argi = args[i];
 						if ((argi == "-R") || (argi == "/R") || (argi == "--recursive")) {
 							blnRecursive = true;
@@ -82,6 +84,7 @@ namespace WebP42
 				Console.WriteLine("{0,10} {1,10} {2,3}% TOTAL for {3} files in {4}", totalOriginalSize, totalOptimizedSize,
 				 ComputePercentage(totalOriginalSize, totalOptimizedSize), totalFiles, DateTime.UtcNow - dtmStart);
 			}
+			// TODO : Use this only when parent process is not a command line prompt (like cmd, PowerShell, a *nix shell port, etc.)
 			Console.WriteLine("Press any key to exit...");
 			Console.ReadKey();
 		}
@@ -133,8 +136,16 @@ namespace WebP42
 
 				CompressionTrial? nctBestLossless = FastestOfSmallest(lngOrigSize, losslessTrials);
 
+				// TODO : near lossless compression experiment
+
 #if LossyExperiment
+				// TODO : Use lossy compression when a command line option is specified
+				// It's very rare to see lossy compression win over lossless when converting PNG files
+				// TODO : For heavily compressed JPEG input files, try to guess the JPEG quality index
+				// to use it with the advanced WebP setting made to mimic JPEG quality index. Of course,
+				// measure the distortion afterwards.
 				if (blnCandidateForLossy) {
+					// TODO : Go by steps of 4, then refine
 					for (byte q = 99; q >= 1 && ctLossy.IsVisuallyLossless(); q--) {
 						ctLossy = TryLossy(bmpGdiplus, q, lossyTrials, out lossyStats);
 					}
@@ -196,6 +207,7 @@ namespace WebP42
 			byte[] bytarLossy = WebP.EncodeLossy(original, quality, speed, false, out emptyReusableStats);
 			TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
 			using (Bitmap bmpLossy = WebP.Decode(bytarLossy)) {
+				// TODO : use PSNR-HVM-S to compute distortion
 				float[] sngarSsim = WebP.GetPictureDistortion(bmpLossy, original, DistorsionMetric.StructuralSimilarity);
 				float[] sngarPsnr = WebP.GetPictureDistortion(bmpLossy, original, DistorsionMetric.PeakSignalNoiseRatio);
 				CompressionTrial trial = new CompressionTrial() { CompressedData = bytarLossy, CompressionLevel = speed, Quality = quality, TimeTook = tsDuration, PictureSsim = sngarSsim[4], AlphaSsim = sngarSsim[3], PicturePsnr = sngarPsnr[4], AlphaPsnr = sngarPsnr[3] };
