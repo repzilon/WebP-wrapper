@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define LossyExperiment
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -25,6 +26,15 @@ namespace WebP42
 		public float PictureSsim;
 
 		public float AlphaSsim;
+
+		public float PicturePsnr;
+
+		public float AlphaPsnr;
+
+		public bool IsVisuallyLossless()
+		{
+			return (PicturePsnr >= 42) && (PictureSsim >= 20) && (AlphaPsnr >= 42) && (AlphaSsim >= 20);
+		}
 #endif
 	}
 
@@ -108,11 +118,11 @@ namespace WebP42
 #if LossyExperiment
 				WebPAuxStats lossyStats;
 				List<CompressionTrial> lossyTrials = new List<CompressionTrial>();
-				CompressionTrial ctLossy100 = TryLossy(bmpGdiplus, 100, lossyTrials, out lossyStats);
-				bool blnCandidateForLossy = (ctLossy100.PictureSsim > 42) && (ctLossy100.AlphaSsim > 42);
-				File.WriteAllBytes(inputPath + ".lossy100.webp", ctLossy100.CompressedData);
+				CompressionTrial ctLossy = TryLossy(bmpGdiplus, 100, lossyTrials, out lossyStats);
+				bool blnCandidateForLossy = ctLossy.IsVisuallyLossless();
 #endif
 
+				// TODO : Perform some kind of binary search. Start with level 0, 4 and 9, then refine
 				CompressionTrial[] losslessTrials = new CompressionTrial[9 + 1];
 				for (byte i = 0; i <= 9; i++) {
 					DateTime dtmStart = DateTime.UtcNow;
@@ -125,18 +135,20 @@ namespace WebP42
 
 #if LossyExperiment
 				if (blnCandidateForLossy) {
-					CompressionTrial ctNew = new CompressionTrial();
-					for (byte q = 99; !((q <= 0) || ((ctNew.PictureSsim != 0) && (ctNew.PictureSsim < 42))); q--) {
-						ctNew = TryLossy(bmpGdiplus, q, lossyTrials, out lossyStats);
+					for (byte q = 99; q >= 1 && ctLossy.IsVisuallyLossless(); q--) {
+						ctLossy = TryLossy(bmpGdiplus, q, lossyTrials, out lossyStats);
 					}
 					if (lossyTrials.Count >= 2) {
 						var ctBestLossy = lossyTrials[lossyTrials.Count - 2];
 						var q = ctBestLossy.Quality;
 						lossyTrials.Clear();
 						for (byte s = 0; s <= 9; s++) {
-							ctNew = TryLossy(bmpGdiplus, q, s, lossyTrials, out lossyStats);
+							ctLossy = TryLossy(bmpGdiplus, q, s, lossyTrials, out lossyStats);
 						}
 						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, lossyTrials);
+						if (nctBestLossy != null) {
+							File.WriteAllBytes(inputPath + ".lossy" + nctBestLossy.Value.Quality + "z" + nctBestLossy.Value.CompressionLevel + ".webp", nctBestLossy.Value.CompressedData);
+						}
 					}
 				}
 #endif
@@ -184,8 +196,9 @@ namespace WebP42
 			byte[] bytarLossy = WebP.EncodeLossy(original, quality, speed, false, out emptyReusableStats);
 			TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
 			using (Bitmap bmpLossy = WebP.Decode(bytarLossy)) {
-				float[] sngarSsim = WebP.GetPictureDistortion(bmpLossy, original, 1);
-				CompressionTrial trial = new CompressionTrial() { CompressedData = bytarLossy, CompressionLevel = speed, Quality = quality, TimeTook = tsDuration, PictureSsim = sngarSsim[4], AlphaSsim = sngarSsim[3] };
+				float[] sngarSsim = WebP.GetPictureDistortion(bmpLossy, original, DistorsionMetric.StructuralSimilarity);
+				float[] sngarPsnr = WebP.GetPictureDistortion(bmpLossy, original, DistorsionMetric.PeakSignalNoiseRatio);
+				CompressionTrial trial = new CompressionTrial() { CompressedData = bytarLossy, CompressionLevel = speed, Quality = quality, TimeTook = tsDuration, PictureSsim = sngarSsim[4], AlphaSsim = sngarSsim[3], PicturePsnr = sngarPsnr[4], AlphaPsnr = sngarPsnr[3] };
 				trialInfo.Add(trial);
 				return trial;
 			}
