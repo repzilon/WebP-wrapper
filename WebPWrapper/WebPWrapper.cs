@@ -1976,63 +1976,61 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */
-			float EPSILON = 0.0001F; // being a variable makes IL smaller
+			/* const */ float EPSILON = 0.0001F; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			return coded_size == other.coded_size &&
-				Math.Abs(PSNRY - other.PSNRY) < EPSILON &&
-				Math.Abs(PSNRU - other.PSNRU) < EPSILON &&
-				Math.Abs(PSNRV - other.PSNRV) < EPSILON &&
-				Math.Abs(PSNRALL - other.PSNRALL) < EPSILON &&
-				Math.Abs(PSNRAlpha - other.PSNRAlpha) < EPSILON &&
-				   block_count_intra4 == other.block_count_intra4 &&
-				   block_count_intra16 == other.block_count_intra16 &&
-				   block_count_skipped == other.block_count_skipped &&
-				   header_bytes == other.header_bytes &&
-				   mode_partition_0 == other.mode_partition_0 &&
-				   residual_bytes_DC_segments0 == other.residual_bytes_DC_segments0 &&
-				   residual_bytes_AC_segments0 == other.residual_bytes_AC_segments0 &&
-				   residual_bytes_uv_segments0 == other.residual_bytes_uv_segments0 &&
-				   residual_bytes_DC_segments1 == other.residual_bytes_DC_segments1 &&
-				   residual_bytes_AC_segments1 == other.residual_bytes_AC_segments1 &&
-				   residual_bytes_uv_segments1 == other.residual_bytes_uv_segments1 &&
-				   residual_bytes_DC_segments2 == other.residual_bytes_DC_segments2 &&
-				   residual_bytes_AC_segments2 == other.residual_bytes_AC_segments2 &&
-				   residual_bytes_uv_segments2 == other.residual_bytes_uv_segments2 &&
-				   residual_bytes_DC_segments3 == other.residual_bytes_DC_segments3 &&
-				   residual_bytes_AC_segments3 == other.residual_bytes_AC_segments3 &&
-				   residual_bytes_uv_segments3 == other.residual_bytes_uv_segments3 &&
-				   segment_size_segments0 == other.segment_size_segments0 &&
-				   segment_size_segments1 == other.segment_size_segments1 &&
-				   segment_size_segments2 == other.segment_size_segments2 &&
-				   segment_size_segments3 == other.segment_size_segments3 &&
-				   segment_quant_segments0 == other.segment_quant_segments0 &&
-				   segment_quant_segments1 == other.segment_quant_segments1 &&
-				   segment_quant_segments2 == other.segment_quant_segments2 &&
-				   segment_quant_segments3 == other.segment_quant_segments3 &&
-				   segment_level_segments0 == other.segment_level_segments0 &&
-				   segment_level_segments1 == other.segment_level_segments1 &&
-				   segment_level_segments2 == other.segment_level_segments2 &&
-				   segment_level_segments3 == other.segment_level_segments3 &&
-				   alpha_data_size == other.alpha_data_size &&
-				   layer_data_size == other.layer_data_size &&
-				   lossless_features == other.lossless_features &&
-				   histogram_bits == other.histogram_bits &&
-				   transform_bits == other.transform_bits &&
-				   cache_bits == other.cache_bits &&
-				   palette_size == other.palette_size &&
-				   lossless_size == other.lossless_size &&
-				   lossless_hdr_size == other.lossless_hdr_size &&
-				   lossless_data_size == other.lossless_data_size;
+			 Math.Abs(PSNRY - other.PSNRY) < EPSILON &&
+			 Math.Abs(PSNRU - other.PSNRU) < EPSILON &&
+			 Math.Abs(PSNRV - other.PSNRV) < EPSILON &&
+			 Math.Abs(PSNRALL - other.PSNRALL) < EPSILON &&
+			 Math.Abs(PSNRAlpha - other.PSNRAlpha) < EPSILON &&
+			 block_count_intra4 == other.block_count_intra4 &&
+			 block_count_intra16 == other.block_count_intra16 &&
+			 block_count_skipped == other.block_count_skipped &&
+			 header_bytes == other.header_bytes &&
+			 mode_partition_0 == other.mode_partition_0 &&
+			 residual_bytes_DC_segments0 == other.residual_bytes_DC_segments0 &&
+			 residual_bytes_AC_segments0 == other.residual_bytes_AC_segments0 &&
+			 residual_bytes_uv_segments0 == other.residual_bytes_uv_segments0 &&
+			 residual_bytes_DC_segments1 == other.residual_bytes_DC_segments1 &&
+			 residual_bytes_AC_segments1 == other.residual_bytes_AC_segments1 &&
+			 residual_bytes_uv_segments1 == other.residual_bytes_uv_segments1 &&
+			 residual_bytes_DC_segments2 == other.residual_bytes_DC_segments2 &&
+			 residual_bytes_AC_segments2 == other.residual_bytes_AC_segments2 &&
+			 residual_bytes_uv_segments2 == other.residual_bytes_uv_segments2 &&
+			 residual_bytes_DC_segments3 == other.residual_bytes_DC_segments3 &&
+			 residual_bytes_AC_segments3 == other.residual_bytes_AC_segments3 &&
+			 residual_bytes_uv_segments3 == other.residual_bytes_uv_segments3 &&
+			 segment_size_segments0 == other.segment_size_segments0 &&
+			 segment_size_segments1 == other.segment_size_segments1 &&
+			 segment_size_segments2 == other.segment_size_segments2 &&
+			 segment_size_segments3 == other.segment_size_segments3 &&
+			 segment_quant_segments0 == other.segment_quant_segments0 &&
+			 segment_quant_segments1 == other.segment_quant_segments1 &&
+			 segment_quant_segments2 == other.segment_quant_segments2 &&
+			 segment_quant_segments3 == other.segment_quant_segments3 &&
+			 segment_level_segments0 == other.segment_level_segments0 &&
+			 segment_level_segments1 == other.segment_level_segments1 &&
+			 segment_level_segments2 == other.segment_level_segments2 &&
+			 segment_level_segments3 == other.segment_level_segments3 &&
+			 alpha_data_size == other.alpha_data_size &&
+			 layer_data_size == other.layer_data_size &&
+			 lossless_features == other.lossless_features &&
+			 histogram_bits == other.histogram_bits &&
+			 transform_bits == other.transform_bits &&
+			 cache_bits == other.cache_bits &&
+			 palette_size == other.palette_size &&
+			 lossless_size == other.lossless_size &&
+			 lossless_hdr_size == other.lossless_hdr_size &&
+			 lossless_data_size == other.lossless_data_size;
 		}
 
 		public override int GetHashCode()
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */
-			int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = -2133640376;
@@ -2280,27 +2278,26 @@ namespace WebPWrapper
 		public bool Equals(WebPDecoderOptions other)
 		{
 			return bypass_filtering == other.bypass_filtering &&
-				   no_fancy_upsampling == other.no_fancy_upsampling &&
-				   use_cropping == other.use_cropping &&
-				   crop_left == other.crop_left &&
-				   crop_top == other.crop_top &&
-				   crop_width == other.crop_width &&
-				   crop_height == other.crop_height &&
-				   use_scaling == other.use_scaling &&
-				   scaled_width == other.scaled_width &&
-				   scaled_height == other.scaled_height &&
-				   use_threads == other.use_threads &&
-				   dithering_strength == other.dithering_strength &&
-				   flip == other.flip &&
-				   alpha_dithering_strength == other.alpha_dithering_strength;
+			 no_fancy_upsampling == other.no_fancy_upsampling &&
+			 use_cropping == other.use_cropping &&
+			 crop_left == other.crop_left &&
+			 crop_top == other.crop_top &&
+			 crop_width == other.crop_width &&
+			 crop_height == other.crop_height &&
+			 use_scaling == other.use_scaling &&
+			 scaled_width == other.scaled_width &&
+			 scaled_height == other.scaled_height &&
+			 use_threads == other.use_threads &&
+			 dithering_strength == other.dithering_strength &&
+			 flip == other.flip &&
+			 alpha_dithering_strength == other.alpha_dithering_strength;
 		}
 
 		public override int GetHashCode()
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */
-			int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = 1943392893;
@@ -2364,8 +2361,7 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */
-			int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = 1439674596;
