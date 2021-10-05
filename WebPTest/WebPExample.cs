@@ -100,9 +100,9 @@ namespace WebPTest
 							use_cropping = 1,
 							crop_top = 10,          //Top beginning of crop area
 							crop_left = 10,         //Left beginning of crop area
-							crop_height = 250,       //Height of crop area
-							crop_width = 300,        //Width of crop area
-							use_threads = 1,         //Use multi-threading
+							crop_height = 250,      //Height of crop area
+							crop_width = 300,       //Width of crop area
+							use_threads = 1,        //Use multi-threading
 							flip = 1                //Flip the image
 						};
 						pictureBox.Image = WebP.Decode(rawWebP, decoderOptions);
