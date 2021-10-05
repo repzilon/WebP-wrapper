@@ -1436,9 +1436,9 @@ namespace WebPWrapper
 		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
 		private static extern int WebPPictureDistortion_x64(ref WebPPicture srcPicture, ref WebPPicture refPicture, int metric_type, IntPtr pResult);
 	}
-#endregion
+	#endregion
 
-#region | Predefined |
+	#region | Predefined |
 	/// <summary>Enumerate some predefined settings for WebPConfig, depending on the type of source picture. These presets are used when calling WebPConfigPreset().</summary>
 	internal enum WebPPreset
 	{
@@ -1616,9 +1616,9 @@ namespace WebPWrapper
 		StructuralSimilarity,
 		LightweightSimilarity
 	}
-#endregion
+	#endregion
 
-#region | libwebp structs |
+	#region | libwebp structs |
 	/// <summary>Features gathered from the bit stream</summary>
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct WebPBitstreamFeatures
@@ -1976,7 +1976,8 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */ float EPSILON = 0.0001F; // being a variable makes IL smaller
+			/* const */
+			float EPSILON = 0.0001F; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			return coded_size == other.coded_size &&
@@ -2030,7 +2031,8 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */
+			int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = -2133640376;
@@ -2297,7 +2299,8 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */
+			int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = 1943392893;
@@ -2331,9 +2334,9 @@ namespace WebPWrapper
 			return !(options1 == options2);
 		}
 	}
-#endregion
+	#endregion
 
-#region | WebP-Wrapper structs |
+	#region | WebP-Wrapper structs |
 	[StructLayout(LayoutKind.Auto)]
 	public struct WebPInfo : IEquatable<WebPInfo>
 	{
@@ -2361,7 +2364,8 @@ namespace WebPWrapper
 		{
 #pragma warning disable U2U1000 // Local variable can be inlined or declared constant
 #pragma warning disable RCS1118 // Mark local variable as constant.
-			/* const */ int hashKey = -1521134295; // being a variable makes IL smaller
+			/* const */
+			int hashKey = -1521134295; // being a variable makes IL smaller
 #pragma warning restore RCS1118 // Mark local variable as constant.
 #pragma warning restore U2U1000 // Local variable can be inlined or declared constant
 			int hashCode = 1439674596;
@@ -2386,5 +2390,5 @@ namespace WebPWrapper
 			return !(info1 == info2);
 		}
 	}
-#endregion
+	#endregion
 }
