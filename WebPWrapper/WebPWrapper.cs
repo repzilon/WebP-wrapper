@@ -65,11 +65,11 @@ namespace WebPWrapper
 				//Uncompress the image
 				int outputSize = bmpData.Stride * info.Height;
 				IntPtr ptrData = pinnedWebP.AddrOfPinnedObject();
-				int size = pixelMap.PixelFormat == PixelFormat.Format24bppRgb
+				IntPtr size = pixelMap.PixelFormat == PixelFormat.Format24bppRgb
 				 ? UnsafeNativeMethods.WebPDecodeBGRInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, bmpData.Stride)
 				 : UnsafeNativeMethods.WebPDecodeBGRAInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, bmpData.Stride);
 
-				if (size == 0) {
+				if (size == IntPtr.Zero) {
 					throw new Exception("Can´t encode WebP");
 				}
 
@@ -1129,7 +1129,7 @@ namespace WebPWrapper
 		/// <param name="output_buffer_size">Size of allocated buffer</param>
 		/// <param name="output_stride">Specifies the distance between scan lines</param>
 		/// <returns>output_buffer if function succeeds; NULL otherwise</returns>
-		internal static int WebPDecodeBGRInto(IntPtr data, int data_size, IntPtr output_buffer, int output_buffer_size, int output_stride)
+		internal static IntPtr WebPDecodeBGRInto(IntPtr data, int data_size, IntPtr output_buffer, int output_buffer_size, int output_stride)
 		{
 			switch (IntPtr.Size) {
 				case 4:
@@ -1142,10 +1142,10 @@ namespace WebPWrapper
 		}
 
 		[DllImport("libwebp_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRInto")]
-		private static extern int WebPDecodeBGRInto_x86([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+		private static extern IntPtr WebPDecodeBGRInto_x86([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
 
 		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRInto")]
-		private static extern int WebPDecodeBGRInto_x64([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+		private static extern IntPtr WebPDecodeBGRInto_x64([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
 
 		/// <summary>Decode WEBP image pointed to by *data and returns BGR samples into a preallocated buffer</summary>
 		/// <param name="data">Pointer to WebP image data</param>
@@ -1154,7 +1154,7 @@ namespace WebPWrapper
 		/// <param name="output_buffer_size">Size of allocated buffer</param>
 		/// <param name="output_stride">Specifies the distance between scan lines</param>
 		/// <returns>output_buffer if function succeeds; NULL otherwise</returns>
-		internal static int WebPDecodeBGRAInto(IntPtr data, int data_size, IntPtr output_buffer, int output_buffer_size, int output_stride)
+		internal static IntPtr WebPDecodeBGRAInto(IntPtr data, int data_size, IntPtr output_buffer, int output_buffer_size, int output_stride)
 		{
 			switch (IntPtr.Size) {
 				case 4:
@@ -1167,10 +1167,36 @@ namespace WebPWrapper
 		}
 
 		[DllImport("libwebp_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRAInto")]
-		private static extern int WebPDecodeBGRAInto_x86([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+		private static extern IntPtr WebPDecodeBGRAInto_x86([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
 
 		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRAInto")]
-		private static extern int WebPDecodeBGRAInto_x64([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+		private static extern IntPtr WebPDecodeBGRAInto_x64([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+
+#if false
+		/// <summary>Decode WEBP image pointed to by *data and returns ARGB samples into a preallocated buffer</summary>
+		/// <param name="data">Pointer to WebP image data</param>
+		/// <param name="data_size">This is the size of the memory block pointed to by data containing the image data</param>
+		/// <param name="output_buffer">Pointer to decoded WebP image</param>
+		/// <param name="output_buffer_size">Size of allocated buffer</param>
+		/// <param name="output_stride">Specifies the distance between scan lines</param>
+		internal static IntPtr WebPDecodeARGBInto(IntPtr data, int data_size, IntPtr output_buffer, int output_buffer_size, int output_stride)
+		{
+			switch (IntPtr.Size) {
+				case 4:
+					return WebPDecodeARGBInto_x86(data, (UIntPtr)data_size, output_buffer, output_buffer_size, output_stride);
+				case 8:
+					return WebPDecodeARGBInto_x64(data, (UIntPtr)data_size, output_buffer, output_buffer_size, output_stride);
+				default:
+					throw new InvalidOperationException("Invalid platform. Can not find proper function");
+			}
+		}
+
+		[DllImport("libwebp_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeARGBInto")]
+		private static extern IntPtr WebPDecodeARGBInto_x86([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+
+		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeARGBInto")]
+		private static extern IntPtr WebPDecodeARGBInto_x64([In] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
+#endif
 
 		/// <summary>Initialize the configuration as empty. This function must always be called first, unless WebPGetFeatures() is to be called.</summary>
 		/// <param name="webPDecoderConfig">Configuration structure</param>
@@ -1410,9 +1436,9 @@ namespace WebPWrapper
 		[DllImport("libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
 		private static extern int WebPPictureDistortion_x64(ref WebPPicture srcPicture, ref WebPPicture refPicture, int metric_type, IntPtr pResult);
 	}
-	#endregion
+#endregion
 
-	#region | Predefined |
+#region | Predefined |
 	/// <summary>Enumerate some predefined settings for WebPConfig, depending on the type of source picture. These presets are used when calling WebPConfigPreset().</summary>
 	internal enum WebPPreset
 	{
@@ -1590,9 +1616,9 @@ namespace WebPWrapper
 		StructuralSimilarity,
 		LightweightSimilarity
 	}
-	#endregion
+#endregion
 
-	#region | libwebp structs |
+#region | libwebp structs |
 	/// <summary>Features gathered from the bit stream</summary>
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct WebPBitstreamFeatures
@@ -2305,9 +2331,9 @@ namespace WebPWrapper
 			return !(options1 == options2);
 		}
 	}
-	#endregion
+#endregion
 
-	#region | WebP-Wrapper structs |
+#region | WebP-Wrapper structs |
 	[StructLayout(LayoutKind.Auto)]
 	public struct WebPInfo : IEquatable<WebPInfo>
 	{
@@ -2360,5 +2386,5 @@ namespace WebPWrapper
 			return !(info1 == info2);
 		}
 	}
-	#endregion
+#endregion
 }
