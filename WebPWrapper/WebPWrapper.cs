@@ -21,6 +21,12 @@
 // WebPInfo GetInfo(byte[] rawWebP) - Get information of WEBP data
 // float[] PictureDistortion(Bitmap source, Bitmap reference, DistorsionMetric metricType) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TODO : throw more specific exceptions according to context (throw new Exception("Too short message"); is not informative)
+// TODO : Split into several files
+// TODO : make multi-targeting SDK projects
+// TODO : abstract the native method calls with the factory pattern. This will also help future portability work.
+// TODO : abstract Bitmap-like objects, so on macOS, Linux, iOS and Android we can use alternatives to GDI+
+// TODO : make NuGet package
 using System;
 using System.Collections.Generic;
 using System.Drawing;
