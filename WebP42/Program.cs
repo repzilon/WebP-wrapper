@@ -1,4 +1,5 @@
-﻿//#define LossyExperiment
+﻿#define LossyExperiment
+#define NearLosslessExperiment
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -20,7 +21,7 @@ namespace WebP42
 
 		public TimeSpan TimeTook;
 
-#if LossyExperiment
+#if LossyExperiment || NearLosslessExperiment
 		public byte Quality;
 
 		public float PictureSsim;
@@ -124,6 +125,12 @@ namespace WebP42
 				CompressionTrial ctLossy = TryLossy(bmpGdiplus, 100, lossyTrials, out lossyStats);
 				bool blnCandidateForLossy = ctLossy.IsVisuallyLossless();
 #endif
+#if NearLosslessExperiment
+				WebPAuxStats nearLosslessStats;
+				List<CompressionTrial> nearLosslessTrials = new List<CompressionTrial>();
+				CompressionTrial ctNear = TryNearLossless(bmpGdiplus, 99, nearLosslessTrials, out nearLosslessStats);
+				bool blnCandidateForNearLossless = ctNear.IsVisuallyLossless();
+#endif
 
 				// TODO : Perform some kind of binary search. Start with level 0, 4 and 9, then refine
 				CompressionTrial[] losslessTrials = new CompressionTrial[9 + 1];
@@ -135,8 +142,6 @@ namespace WebP42
 				}
 
 				CompressionTrial? nctBestLossless = FastestOfSmallest(lngOrigSize, losslessTrials);
-
-				// TODO : near lossless compression experiment
 
 #if LossyExperiment
 				// TODO : Use lossy compression when a command line option is specified
@@ -159,6 +164,27 @@ namespace WebP42
 						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, lossyTrials);
 						if (nctBestLossy != null) {
 							File.WriteAllBytes(inputPath + ".lossy" + nctBestLossy.Value.Quality + "z" + nctBestLossy.Value.CompressionLevel + ".webp", nctBestLossy.Value.CompressedData);
+						}
+					}
+				}
+#endif
+
+#if NearLosslessExperiment
+				if (blnCandidateForNearLossless) {
+					// TODO : Go by steps of 4, then refine
+					for (byte q = 98; q >= 1 && ctNear.IsVisuallyLossless(); q--) {
+						ctNear = TryNearLossless(bmpGdiplus, q, nearLosslessTrials, out nearLosslessStats);
+					}
+					if (nearLosslessTrials.Count >= 2) {
+						var ctBestLossy = nearLosslessTrials[nearLosslessTrials.Count - 2];
+						var q = ctBestLossy.Quality;
+						nearLosslessTrials.Clear();
+						for (byte s = 0; s <= 9; s++) {
+							ctNear = TryNearLossless(bmpGdiplus, q, s, nearLosslessTrials, out nearLosslessStats);
+						}
+						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, nearLosslessTrials);
+						if (nctBestLossy != null) {
+							File.WriteAllBytes(inputPath + ".nearlossless" + nctBestLossy.Value.Quality + "z" + nctBestLossy.Value.CompressionLevel + ".webp", nctBestLossy.Value.CompressedData);
 						}
 					}
 				}
@@ -206,6 +232,28 @@ namespace WebP42
 			DateTime dtmStart = DateTime.UtcNow;
 			byte[] bytarLossy = WebP.EncodeLossy(original, quality, speed, false, out emptyReusableStats);
 			TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
+			return RateNonLosslessTrial(original, quality, speed, trialInfo, bytarLossy, tsDuration);
+		}
+#endif
+
+#if NearLosslessExperiment
+		private static CompressionTrial TryNearLossless(Bitmap original, byte quality, ICollection<CompressionTrial> trialInfo, out WebPAuxStats emptyReusableStats)
+		{
+			return TryNearLossless(original, quality, 9, trialInfo, out emptyReusableStats);
+		}
+
+		private static CompressionTrial TryNearLossless(Bitmap original, byte quality, byte speed, ICollection<CompressionTrial> trialInfo, out WebPAuxStats emptyReusableStats)
+		{
+			DateTime dtmStart = DateTime.UtcNow;
+			byte[] bytarLossy = WebP.EncodeNearLossless(original, quality, speed, false, out emptyReusableStats);
+			TimeSpan tsDuration = DateTime.UtcNow - dtmStart;
+			return RateNonLosslessTrial(original, quality, speed, trialInfo, bytarLossy, tsDuration);
+		}
+#endif
+
+#if LossyExperiment || NearLosslessExperiment
+		private static CompressionTrial RateNonLosslessTrial(Bitmap original, byte quality, byte speed, ICollection<CompressionTrial> trialInfo, byte[] bytarLossy, TimeSpan tsDuration)
+		{
 			using (Bitmap bmpLossy = WebP.Decode(bytarLossy)) {
 				// TODO : use PSNR-HVM-S to compute distortion
 				float[] sngarSsim = WebP.GetPictureDistortion(bmpLossy, original, DistorsionMetric.StructuralSimilarity);
