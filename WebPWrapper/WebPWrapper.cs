@@ -809,10 +809,11 @@ namespace WebPWrapper
 				int size = (int)((long)wpic.custom_ptr - (long)initPtr);
 				rawWebP = new byte[size];
 #if DEBUG
-				if (dataWebp.Length > (size * 5)) {
-					Console.Error.WriteLine("Buffer overallocation for dataWebp: needed {0:n0} allocated {1:n0}", size, dataWebp.Length);
-				} else if (dataWebp.Length < size) {
-					Console.Error.WriteLine("Buffer under allocation for dataWebp: needed {0:n0} allocated {1:n0} for {2}x{3}", size, dataWebp.Length, pixelMap.Width, pixelMap.Height);
+				int le = dataWebp.Length;
+				if ((le > 4096) && (le > (size * 5))) {
+					Console.Error.WriteLine("Buffer overallocation for dataWebp: needed {0:n0} allocated {1:n0}", size, le);
+				} else if (le < size) {
+					Console.Error.WriteLine("Buffer under allocation for dataWebp: needed {0:n0} allocated {1:n0} for {2}x{3}", size, le, pixelMap.Width, pixelMap.Height);
 				}
 #endif
 				Array.Copy(dataWebp, rawWebP, size);
