@@ -128,7 +128,7 @@ namespace WebP42
 #if NearLosslessExperiment
 				WebPAuxStats nearLosslessStats;
 				List<CompressionTrial> nearLosslessTrials = new List<CompressionTrial>();
-				CompressionTrial ctNear = TryNearLossless(bmpGdiplus, 99, nearLosslessTrials, out nearLosslessStats);
+				CompressionTrial ctNear = TryNearLossless(bmpGdiplus, 80, nearLosslessTrials, out nearLosslessStats);
 				bool blnCandidateForNearLossless = ctNear.IsVisuallyLossless();
 #endif
 
@@ -149,6 +149,7 @@ namespace WebP42
 				// TODO : For heavily compressed JPEG input files, try to guess the JPEG quality index
 				// to use it with the advanced WebP setting made to mimic JPEG quality index. Of course,
 				// measure the distortion afterwards.
+				CompressionTrial? nctBestLossy = null;
 				if (blnCandidateForLossy) {
 					// TODO : Go by steps of 4, then refine
 					for (byte q = 99; q >= 1 && ctLossy.IsVisuallyLossless(); q--) {
@@ -161,7 +162,7 @@ namespace WebP42
 						for (byte s = 0; s <= 9; s++) {
 							ctLossy = TryLossy(bmpGdiplus, q, s, lossyTrials, out lossyStats);
 						}
-						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, lossyTrials);
+						nctBestLossy = FastestOfSmallest(lngOrigSize, lossyTrials);
 						if (nctBestLossy != null) {
 							File.WriteAllBytes(inputPath + ".lossy" + nctBestLossy.Value.Quality + "z" + nctBestLossy.Value.CompressionLevel + ".webp", nctBestLossy.Value.CompressedData);
 						}
@@ -170,21 +171,24 @@ namespace WebP42
 #endif
 
 #if NearLosslessExperiment
+				CompressionTrial? nctBestNear = null;
 				if (blnCandidateForNearLossless) {
-					// TODO : Go by steps of 4, then refine
-					for (byte q = 98; q >= 1 && ctNear.IsVisuallyLossless(); q--) {
-						ctNear = TryNearLossless(bmpGdiplus, q, nearLosslessTrials, out nearLosslessStats);
+					for (short q = 60; q >= 0 && ctNear.IsVisuallyLossless(); q -= 20) {
+						ctNear = TryNearLossless(bmpGdiplus, (byte)q, nearLosslessTrials, out nearLosslessStats);
 					}
 					if (nearLosslessTrials.Count >= 2) {
-						var ctBestLossy = nearLosslessTrials[nearLosslessTrials.Count - 2];
-						var q = ctBestLossy.Quality;
+						var ctBestNear = nearLosslessTrials[nearLosslessTrials.Count - 1];
+						if (!ctBestNear.IsVisuallyLossless()) {
+							ctBestNear = nearLosslessTrials[nearLosslessTrials.Count - 2];
+						}
+						var q = ctBestNear.Quality;
 						nearLosslessTrials.Clear();
 						for (byte s = 0; s <= 9; s++) {
 							ctNear = TryNearLossless(bmpGdiplus, q, s, nearLosslessTrials, out nearLosslessStats);
 						}
-						CompressionTrial? nctBestLossy = FastestOfSmallest(lngOrigSize, nearLosslessTrials);
-						if (nctBestLossy != null) {
-							File.WriteAllBytes(inputPath + ".nearlossless" + nctBestLossy.Value.Quality + "z" + nctBestLossy.Value.CompressionLevel + ".webp", nctBestLossy.Value.CompressedData);
+						nctBestNear = FastestOfSmallest(lngOrigSize, nearLosslessTrials);
+						if (nctBestNear != null) {
+							File.WriteAllBytes(inputPath + ".nearlossless" + nctBestNear.Value.Quality + "z" + nctBestNear.Value.CompressionLevel + ".webp", nctBestNear.Value.CompressedData);
 						}
 					}
 				}
@@ -198,14 +202,33 @@ namespace WebP42
 					totalOriginalSize += lngOrigSize;
 					totalOptimizedSize += intWebpSize;
 					totalFiles++;
-					Console.WriteLine("{0,10} {1,10} {2,3}% {3}\t(lossless -z {4})", lngOrigSize, intWebpSize,
+					Console.Write("{0,10} {1,10} {2,3}% {3}\t(lossless -z {4})", lngOrigSize, intWebpSize,
 					 ComputePercentage(lngOrigSize, intWebpSize), RelativePath(strWebpFile, directory), nctBestLossless.Value.CompressionLevel);
 				} else {
 					totalOriginalSize += lngOrigSize;
 					totalOptimizedSize += lngOrigSize;
 					totalFiles++;
-					Console.WriteLine("{0,10} {0,10} 100% {1}", lngOrigSize, RelativePath(inputPath, directory));
+					Console.Write("{0,10} {0,10} 100% {1}", lngOrigSize, RelativePath(inputPath, directory));
 				}
+#if NearLosslessExperiment
+				if (!blnCandidateForNearLossless) {
+					Console.Write(" [n--]");
+				} else if (nctBestNear == null) {
+					Console.Write(" [n+-]");
+				} else {
+					Console.Write(" [n{0} {1:n2}dB SSIM {2:n2}dB PSNR]", nctBestNear.Value.Quality, nctBestNear.Value.PictureSsim, nctBestNear.Value.PicturePsnr);
+				}
+#endif
+#if LossyExperiment
+				if (!blnCandidateForNearLossless) {
+					Console.Write(" [L--]");
+				} else if (nctBestLossy == null) {
+					Console.Write(" [L+-]");
+				} else {
+					Console.Write(" [L{0} {1:n2}dB SSIM {2:n2}dB PSNR]", nctBestLossy.Value.Quality, nctBestLossy.Value.PictureSsim, nctBestLossy.Value.PicturePsnr);
+				}
+#endif
+				Console.Write(Environment.NewLine);
 			} catch (AccessViolationException) {
 				Console.Error.WriteLine(inputPath + " cannot be converted.");
 				throw;
