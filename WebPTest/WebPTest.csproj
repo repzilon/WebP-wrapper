@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{38700B2B-939E-439F-A975-E6FA91703BDB}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebPTest</RootNamespace>
     <AssemblyName>WebPTest</AssemblyName>
@@ -73,6 +73,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -116,12 +119,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+  <!--
     <Content Include="libwebp_x64.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	<Content Include="libwebp_x86.dll">
+    <Content Include="libwebp_x86.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	-->
     <Content Include="WildCherry.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
