@@ -1,0 +1,3 @@
+csc -out:myCodeLibrary.dll -t:library myCode.cs
+
+https://docs.microsoft.com/en-us/dotnet/framework/app-domains/build-single-file-assembly

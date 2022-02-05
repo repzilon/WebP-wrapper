@@ -1,0 +1,1 @@
+csc -out:libwebpwrapper.dll -t:library WebPWrapper.cs /unsafe

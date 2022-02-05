@@ -719,16 +719,17 @@ namespace WebPWrapper
         /// <param name="config">Configuration for encode</param>
         /// <param name="info">True if need encode info.</param>
         /// <returns>Compressed data</returns>
-        private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info = false)
+        unsafe private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info = false)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             byte[] rawWebP = null;
-            byte[] dataWebp = null;
+            IntPtr dataWebpPtr = IntPtr.Zero;
             WebPPicture wpic = new WebPPicture();
             BitmapData bmpData = null;
             WebPAuxStats stats = new WebPAuxStats();
             IntPtr ptrStats = IntPtr.Zero;
-            GCHandle pinnedArrayHandle = new GCHandle();
             int dataWebpSize;
+            Console.WriteLine($"bench AdvancedEncode #0: {stopwatch.ElapsedMilliseconds}ms");
             try
             {
                 //Validate the configuration
@@ -742,6 +743,7 @@ namespace WebPWrapper
                     throw new NotSupportedException("Bitmap's dimension is too large. Max is " + WEBP_MAX_DIMENSION + "x" + WEBP_MAX_DIMENSION + " pixels.");
                 if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
                     throw new NotSupportedException("Only support Format24bppRgb and Format32bppArgb pixelFormat.");
+                Console.WriteLine($"bench AdvancedEncode #1: {stopwatch.ElapsedMilliseconds}ms");
 
                 // Setup the input data, allocating a the bitmap, width and height
                 bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, bmp.PixelFormat);
@@ -751,6 +753,7 @@ namespace WebPWrapper
                 wpic.height = (int)bmp.Height;
                 wpic.use_argb = 1;
 
+                Console.WriteLine($"bench AdvancedEncode #2: {stopwatch.ElapsedMilliseconds}ms");
                 if (bmp.PixelFormat == PixelFormat.Format32bppArgb)
                 {
                     //Put the bitmap componets in wpic
@@ -770,6 +773,7 @@ namespace WebPWrapper
                         throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
                     dataWebpSize = bmp.Width * bmp.Height * 24;
                 }
+                Console.WriteLine($"bench AdvancedEncode #3: {stopwatch.ElapsedMilliseconds}ms");
 
                 //Set up statistics of compression
                 if (info)
@@ -783,19 +787,21 @@ namespace WebPWrapper
                 //Memory for WebP output
                 if (dataWebpSize > 2147483591)
                     dataWebpSize = 2147483591;
-                dataWebp = new byte[bmp.Width * bmp.Height * 32];
-                pinnedArrayHandle = GCHandle.Alloc(dataWebp, GCHandleType.Pinned);
-                IntPtr initPtr = pinnedArrayHandle.AddrOfPinnedObject();
+                dataWebpPtr = Marshal.AllocHGlobal(dataWebpSize); // TODO: shouldn't we allocate less? how to know?
+                var initPtr = (byte*)dataWebpPtr.ToPointer();
                 wpic.custom_ptr = initPtr;
+                Console.WriteLine($"bench AdvancedEncode #4: {stopwatch.ElapsedMilliseconds}ms");
 
                 //Set up a byte-writing method (write-to-memory, in this case)
                 UnsafeNativeMethods.OnCallback = new UnsafeNativeMethods.WebPMemoryWrite(MyWriter);
                 wpic.writer = Marshal.GetFunctionPointerForDelegate(UnsafeNativeMethods.OnCallback);
+                Console.WriteLine($"bench AdvancedEncode #5: {stopwatch.ElapsedMilliseconds}ms");
 
                 //compress the input samples
                 if (UnsafeNativeMethods.WebPEncode(ref config, ref wpic) != 1)
                     throw new Exception("Encoding error: " + ((WebPEncodingError)wpic.error_code).ToString());
 
+                Console.WriteLine($"bench AdvancedEncode #6: {stopwatch.ElapsedMilliseconds}ms");
                 //Remove OnCallback
                 UnsafeNativeMethods.OnCallback = null;
 
@@ -804,13 +810,15 @@ namespace WebPWrapper
                 bmpData = null;
 
                 //Copy webpData to rawWebP
-                int size = (int)((long)wpic.custom_ptr - (long)initPtr);
+                Console.WriteLine($"bench AdvancedEncode #7: {stopwatch.ElapsedMilliseconds}ms");
+                var size = (int)(wpic.custom_ptr - initPtr);
                 rawWebP = new byte[size];
-                Array.Copy(dataWebp, rawWebP, size);
+                Marshal.Copy(dataWebpPtr, rawWebP, 0, size); // TODO: directly pass unmanaged pointer to metada encode
 
                 //Remove compression data
-                pinnedArrayHandle.Free();
-                dataWebp = null;
+                Marshal.FreeHGlobal(dataWebpPtr);
+                dataWebpPtr = IntPtr.Zero;
+                Console.WriteLine($"bench AdvancedEncode #8: {stopwatch.ElapsedMilliseconds}ms");
 
                 //Show statistics
                 if (info)
@@ -841,22 +849,16 @@ namespace WebPWrapper
                                     "Filter level 3: " + stats.segment_level_segments3 + " residuals bytes\n", "Compression statistics");
                 }
 
+                Console.WriteLine($"bench AdvancedEncode #9: {stopwatch.ElapsedMilliseconds}ms");
                 return rawWebP;
             }
             catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn WebP.AdvancedEncode"); }
             finally
             {
-                //Free temporal compress memory
-                if (pinnedArrayHandle.IsAllocated)
-                {
-                    pinnedArrayHandle.Free();
-                }
+                if (dataWebpPtr != IntPtr.Zero) Marshal.FreeHGlobal(dataWebpPtr);
 
                 //Free statistics memory
-                if (ptrStats != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(ptrStats);
-                }
+                if (ptrStats != IntPtr.Zero) Marshal.FreeHGlobal(ptrStats);
 
                 //Unlock the pixels
                 if (bmpData != null)
@@ -872,14 +874,18 @@ namespace WebPWrapper
             }
         }
 
-        public void EncodeWithMeta(Bitmap bmp, string path)
+        public void EncodeWithMeta(Bitmap bmp, string path, byte[] rawXmp, int quality = 85)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             IntPtr mux = UnsafeNativeMethods.WebPNewInternal(0x0108); // TODO: hardcoded libwebp ABI version
             var config = new WebPConfig();
-            if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, 85) == 0)
+            if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_ICON, quality) == 0)
                 throw new Exception("Can´t configure preset");
+            config.method = 0;
 
+            Console.WriteLine($"bench #0: {stopwatch.ElapsedMilliseconds}ms");
             var rawWebP = AdvancedEncode(bmp, config);
+            Console.WriteLine($"bench #1 after AdvancedEncode: {stopwatch.ElapsedMilliseconds}ms");
             WebPMuxError err;
 
             // TODO: directly use Ptr from AdvancedEncode instead of managed<>unmanaged back and forth
@@ -890,25 +896,23 @@ namespace WebPWrapper
                 size = Convert.ToUInt64(rawWebP.Length),
                 bytes = webpPtr
             };
-            Console.WriteLine($"WebPMuxSetImage {mux} , {webpData.size} {webpData.bytes}");
+            Console.WriteLine($"WebPMuxSetImage {mux} , {webpData.size} {webpData.bytes} elapsed={stopwatch.ElapsedMilliseconds}ms");
             err = UnsafeNativeMethods.WebPMuxSetImage(mux, ref webpData, 0);
             if (err != WebPMuxError.WEBP_MUX_OK) throw new Exception($"Error: {err}");
 
-            // TODO: use real EXIF format
-            var rawMeta = Encoding.ASCII.GetBytes("This is some metadata");
-            var pinnedRawMeta = GCHandle.Alloc(rawMeta, GCHandleType.Pinned);
+            var pinnedRawMeta = GCHandle.Alloc(rawXmp, GCHandleType.Pinned);
             IntPtr metaPtr = pinnedRawMeta.AddrOfPinnedObject();
             var metaWebData = new WebPData()
             {
-                size = Convert.ToUInt64(rawMeta.Length),
+                size = Convert.ToUInt64(rawXmp.Length),
                 bytes = metaPtr
             };
-            Console.WriteLine($"WebPMuxSetChunk {mux} , {metaWebData.size} {metaWebData.bytes}");
-            err = UnsafeNativeMethods.WebPMuxSetChunk(mux, "EXIF", ref metaWebData, 0);
+            Console.WriteLine($"WebPMuxSetChunk {mux} , {metaWebData.size} {metaWebData.bytes} elapsed={stopwatch.ElapsedMilliseconds}ms");
+            err = UnsafeNativeMethods.WebPMuxSetChunk(mux, "XMP ", ref metaWebData, 0);
             if (err != WebPMuxError.WEBP_MUX_OK) throw new Exception($"Error: {err}");
 
             var outputData = new WebPData();
-            Console.WriteLine($"WebPMuxAssemble {mux} , {outputData}");
+            Console.WriteLine($"WebPMuxAssemble {mux} , {outputData} elapsed={stopwatch.ElapsedMilliseconds}ms");
             err = UnsafeNativeMethods.WebPMuxAssemble(mux, ref outputData);
             if (err != WebPMuxError.WEBP_MUX_OK) throw new Exception($"Error: {err}");
 
@@ -917,23 +921,21 @@ namespace WebPWrapper
             Marshal.Copy(outputData.bytes, rawOutput, 0, size);
             File.WriteAllBytes(path, rawOutput);
 
+            Console.WriteLine($"bench before WebPMuxDelete elapsed={stopwatch.ElapsedMilliseconds}ms");
             UnsafeNativeMethods.WebPMuxDelete(mux);
             //UnsafeNativeMethods.WebPDataClear(ref outputData);
             Marshal.FreeHGlobal(outputData.bytes);
 
             pinnedRawWebP.Free();
             pinnedRawMeta.Free();
+            Console.WriteLine($"bench done all elapsed={stopwatch.ElapsedMilliseconds}ms");
         }
 
-        private int MyWriter([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
+        unsafe private int MyWriter([InAttribute()] byte* data, UIntPtr data_size, ref WebPPicture picture)
         {
-            //UnsafeNativeMethods.CopyMemory(picture.custom_ptr, data, (uint)data_size);
-            var size = (int)data_size;
-            var buffer = new byte[size];
-            Marshal.Copy(data, buffer, 0, size);
-            Marshal.Copy(buffer, 0, picture.custom_ptr, size);
-            //picture.custom_ptr = IntPtr.Add(picture.custom_ptr, (int)data_size);   //Only in .NET > 4.0
-            picture.custom_ptr = new IntPtr(picture.custom_ptr.ToInt64() + (int)data_size);
+            var size = (long)data_size;
+            Buffer.MemoryCopy(data, picture.custom_ptr, size, size);
+            picture.custom_ptr += size;
             return 1;
         }
 
@@ -1136,7 +1138,7 @@ namespace WebPWrapper
         /// <param name="wpic">Picture structure</param>
         /// <returns></returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        internal delegate int WebPMemoryWrite([In()] IntPtr data, UIntPtr data_size, ref WebPPicture wpic);
+        internal unsafe delegate int WebPMemoryWrite([In()] byte* data, UIntPtr data_size, ref WebPPicture wpic);
         internal static WebPMemoryWrite OnCallback;
 
         /// <summary>Compress to WebP format</summary>
@@ -1526,6 +1528,7 @@ namespace WebPWrapper
         [DllImport("libwebpmux.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPMuxDelete")]
         internal static extern void WebPMuxDelete(IntPtr mux);
 
+        // TODO: this was custom patch in libwebp but not necessary if Marshal.FreeHGlobal works too
         [DllImport("libwebpmux.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDataClearExternal")]
         internal static extern void WebPDataClear(ref WebPData mux);
     }
@@ -1762,7 +1765,7 @@ namespace WebPWrapper
 
     /// <summary>Main exchange structure (input samples, output bytes, statistics)</summary>
     [StructLayoutAttribute(LayoutKind.Sequential)]
-    internal struct WebPPicture
+    unsafe internal struct WebPPicture
     {
         /// <summary>Main flag for encoder selecting between ARGB or YUV input. Recommended to use ARGB input (*argb, argb_stride) for lossless, and YUV input (*y, *u, *v, etc.) for lossy</summary>
         public int use_argb;
@@ -1799,7 +1802,7 @@ namespace WebPWrapper
         /// <summary>Byte-emission hook, to store compressed bytes as they are ready</summary>
         public IntPtr writer;
         /// <summary>Can be used by the writer</summary>
-        public IntPtr custom_ptr;
+        public byte* custom_ptr;
         // map for extra information (only for lossy compression mode)
         /// <summary>1: intra type, 2: segment, 3: quant, 4: intra-16 prediction mode, 5: chroma prediction mode, 6: bit cost, 7: distortion</summary>
         public int extra_info_type;
