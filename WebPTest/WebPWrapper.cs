@@ -28,7 +28,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 
 namespace WebPWrapper
 {
@@ -824,7 +823,7 @@ namespace WebPWrapper
                 if (info)
                 {
                     stats = (WebPAuxStats)Marshal.PtrToStructure(ptrStats, typeof(WebPAuxStats));
-                    MessageBox.Show("Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
+                    Console.WriteLine("Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
                                     "Output:    " + stats.coded_size + " bytes\n" +
                                     "PSNR Y:    " + stats.PSNRY + " db\n" +
                                     "PSNR u:    " + stats.PSNRU + " db\n" +
@@ -874,14 +873,17 @@ namespace WebPWrapper
             }
         }
 
-        public void EncodeWithMeta(Bitmap bmp, string path, byte[] rawXmp, int quality = 85)
+        public void EncodeWithMeta(Bitmap bmp, string path, byte[] rawXmp,
+            int quality = 75, int speed = 4, bool multithreads = false, int alphaQuality = 100)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             IntPtr mux = UnsafeNativeMethods.WebPNewInternal(0x0108); // TODO: hardcoded libwebp ABI version
             var config = new WebPConfig();
-            if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_ICON, quality) == 0)
+            if (UnsafeNativeMethods.WebPConfigInit(ref config, WebPPreset.WEBP_PRESET_DEFAULT, quality) == 0)
                 throw new Exception("Can´t configure preset");
-            config.method = 0;
+            config.method = Math.Max(Math.Min(speed, 6), 0); // 0 is fastest
+            config.thread_level = multithreads ? 1 : 0;
+            config.alpha_quality = alphaQuality;
 
             Console.WriteLine($"bench #0: {stopwatch.ElapsedMilliseconds}ms");
             var rawWebP = AdvancedEncode(bmp, config);
