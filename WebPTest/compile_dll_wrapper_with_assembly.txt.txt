@@ -1,1 +1,3 @@
+https://docs.microsoft.com/en-us/dotnet/framework/app-domains/build-single-file-assembly
+
 csc -out:libwebpwrapper.dll -t:library WebPWrapper.cs /unsafe
