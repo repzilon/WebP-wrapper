@@ -1,13 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <PublishUrlHistory>publicar\</PublishUrlHistory>
-    <InstallUrlHistory />
-    <SupportUrlHistory />
-    <UpdateUrlHistory />
-    <BootstrapperUrlHistory />
-    <ErrorReportUrlHistory />
-    <FallbackCulture>es-ES</FallbackCulture>
-    <VerifyUploadedFiles>false</VerifyUploadedFiles>
-  </PropertyGroup>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="WebPExample.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

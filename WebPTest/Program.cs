@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace WebPTest
+﻿namespace WebPTest
 {
     static class Program
     {
@@ -11,9 +8,8 @@ namespace WebPTest
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new WebPExample());
+			ApplicationConfiguration.Initialize();
+			Application.Run(new WebPExample());
         }
     }
 }
