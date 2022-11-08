@@ -27,7 +27,7 @@ using System.Security;
 
 namespace WebPWrapper
 {
-	public sealed class WebP : IDisposable
+	public static class WebP
 	{
 		private const int WEBP_MAX_DIMENSION = 16383;
 
@@ -408,7 +408,7 @@ namespace WebPWrapper
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossy(Bitmap bmp, int quality, int speed, bool info = false)
+		public static byte[] EncodeLossy(Bitmap bmp, int quality, int speed, bool info = false)
 		{
 			//Initialize configuration structure
 			WebPConfig config = new();
@@ -492,7 +492,7 @@ namespace WebPWrapper
 		/// <param name="bmp">Bitmap with the image</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compressed data</returns>
-		public byte[] EncodeLossless(Bitmap bmp, int speed)
+		public static byte[] EncodeLossless(Bitmap bmp, int speed)
 		{
 			//Initialize configuration structure
 			WebPConfig config = new();
@@ -529,7 +529,7 @@ namespace WebPWrapper
 		/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
 		/// <param name="speed">Between 0 (fastest, lowest compression) and 9 (slower, best compression)</param>
 		/// <returns>Compress data</returns>
-		public byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed = 9)
+		public static byte[] EncodeNearLossless(Bitmap bmp, int quality, int speed = 9)
 		{
 			//test DLL version
 			if (UnsafeNativeMethods.WebPGetDecoderVersion() <= 1082)
@@ -715,7 +715,7 @@ namespace WebPWrapper
 		/// <param name="config">Configuration for encode</param>
 		/// <param name="info">True if need encode info.</param>
 		/// <returns>Compressed data</returns>
-		private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info)
+		private static byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info)
 		{
 			byte[]? rawWebP = null;
 			byte[]? dataWebp = null;
@@ -868,23 +868,15 @@ namespace WebPWrapper
 			}
 		}
 
-		private int MyWriter([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
+		private static int MyWriter([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
 		{
+			// 이거 문제 있음 바꿔야함 CopyMemory는 동작안함
 			UnsafeNativeMethods.CopyMemory(picture.custom_ptr, data, (uint)data_size);
-			//picture.custom_ptr = IntPtr.Add(picture.custom_ptr, (int)data_size);   //Only in .NET > 4.0
-			picture.custom_ptr = new IntPtr(picture.custom_ptr.ToInt64() + (int)data_size);
+			picture.custom_ptr = IntPtr.Add(picture.custom_ptr, (int)data_size);
 			return 1;
 		}
 
 		private delegate int MyWriterDelegate([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture);
-		#endregion
-
-		#region | Destruction |
-		/// <summary>Free memory</summary>
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
 		#endregion
 	}
 
