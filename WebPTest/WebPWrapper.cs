@@ -22,12 +22,12 @@
 /// float[] PictureDistortion(Bitmap source, Bitmap reference, int metric_type) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Windows.Forms;
 
 namespace WebPWrapper
 {
@@ -815,7 +815,7 @@ namespace WebPWrapper
                 if (info)
                 {
                     stats = (WebPAuxStats)Marshal.PtrToStructure(ptrStats, typeof(WebPAuxStats));
-                    MessageBox.Show("Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
+                    Debug.Print(    "Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
                                     "Output:    " + stats.coded_size + " bytes\n" +
                                     "PSNR Y:    " + stats.PSNRY + " db\n" +
                                     "PSNR u:    " + stats.PSNRU + " db\n" +
