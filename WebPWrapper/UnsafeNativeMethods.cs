@@ -9,10 +9,10 @@ namespace WebPWrapper
     //[SuppressUnmanagedCodeSecurity]
     internal static class UnsafeNativeMethods
     {
-        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-        internal static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
+		[DllImport("kernel32.dll", EntryPoint = "RtlMoveMemory", SetLastError = false, ExactSpelling = true)]
+		internal static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
-        private const int WEBP_DECODER_ABI_VERSION = 0x0208;
+		private const int WEBP_DECODER_ABI_VERSION = 0x0208;
 
         /// <summary>This function will initialize the configuration according to a predefined set of parameters (referred to by 'preset') and a given quality factor.</summary>
         /// <param name="config">The WebPConfig structure</param>
