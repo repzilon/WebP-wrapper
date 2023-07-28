@@ -26,6 +26,7 @@
 // TODO : abstract Bitmap-like objects, so on macOS, Linux, iOS and Android we can use alternatives to GDI+
 // TODO : make NuGet package
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -124,7 +125,7 @@ namespace WebPWrapper
 					result = nwc.GetFeatures(ptrRawWebP, rawWebP.Length, ref config.input);
 					if (result != VP8StatusCode.VP8_STATUS_OK)
 					{
-						throw new Exception("Failed WebPGetFeatures with error " + result);
+						throw new ExternalException("Failed WebPGetFeatures with error " + result, (int)result);
 					}
 
 					//Test cropping values
@@ -253,7 +254,7 @@ namespace WebPWrapper
 				VP8StatusCode result = nwc.Decode(ptrRawWebP, rawWebP.Length, ref config);
 				if (result != VP8StatusCode.VP8_STATUS_OK)
 				{
-					throw new Exception("Failed WebPDecode with error " + result);
+					throw new ExternalException("Failed WebPDecode with error " + result, (int)result);
 				}
 
 				nwc.Free(ref config.output);
@@ -300,7 +301,7 @@ namespace WebPWrapper
 				VP8StatusCode result = nwc.GetFeatures(ptrRawWebP, rawWebP.Length, ref config.input);
 				if (result != VP8StatusCode.VP8_STATUS_OK)
 				{
-					throw new Exception("Failed WebPGetFeatures with error " + result);
+					throw new ExternalException("Failed WebPGetFeatures with error " + result, (int)result);
 				}
 
 				// Set up decode options
@@ -336,7 +337,7 @@ namespace WebPWrapper
 				result = nwc.Decode(ptrRawWebP, rawWebP.Length, ref config);
 				if (result != VP8StatusCode.VP8_STATUS_OK)
 				{
-					throw new Exception("Failed WebPDecode with error " + result);
+					throw new ExternalException("Failed WebPDecode with error " + result, (int)result);
 				}
 
 				nwc.Free(ref config.output);
@@ -664,7 +665,7 @@ namespace WebPWrapper
 				result = NativeWrapper.Current.GetFeatures(ptrRawWebP, rawWebP.Length, ref features);
 				if (result != 0)
 				{
-					throw new Exception(result.ToString());
+					throw new ExternalException("Unable to get features of WebP image. Status is " + result.ToString(), (int)result);
 				}
 				var info = new WebPInfo() { Width = (short)features.Width, Height = (short)features.Height, HasAlpha = features.Has_alpha == 1, IsAnimated = features.Has_animation == 1 };
 
@@ -710,22 +711,22 @@ namespace WebPWrapper
 			{
 				if (source == null)
 				{
-					throw new Exception("Source picture is void");
+					throw new ArgumentNullException("source");
 				}
 
 				if (reference == null)
 				{
-					throw new Exception("Reference picture is void");
+					throw new ArgumentNullException("reference");
 				}
 
 				if (metricType > DistorsionMetric.LightweightSimilarity)
 				{
-					throw new Exception("Bad metric_type. Use 0 = PSNR, 1 = SSIM, 2 = LSIM");
+					throw new InvalidEnumArgumentException("Bad metric_type. Use 0 = PSNR, 1 = SSIM, 2 = LSIM");
 				}
 
 				if (source.Width != reference.Width || source.Height != reference.Height)
 				{
-					throw new Exception("Source and Reference pictures have different dimensions");
+					throw new ArgumentException("Source and Reference pictures have different dimensions");
 				}
 
 				// Setup the source picture data, allocating the bitmap, width and height
