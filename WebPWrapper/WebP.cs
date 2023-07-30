@@ -38,7 +38,6 @@ namespace WebPWrapper
 {
 	public static class WebP
 	{
-		private const int WEBP_MAX_DIMENSION = 16383;
 		#region | Public Decode Functions |
 		/// <summary>Read a WebP file</summary>
 		/// <param name="pathFileName">WebP file to load</param>
@@ -68,12 +67,13 @@ namespace WebPWrapper
 				bmpData = LockAllBits(pixelMap, ImageLockMode.WriteOnly);
 
 				//Uncompress the image
-				int outputSize = bmpData.Stride * info.Height;
+				var st = bmpData.Stride;
+				int outputSize = st * info.Height;
 				IntPtr ptrData = pinnedWebP.AddrOfPinnedObject();
 				var nwc = NativeWrapper.Current;
 				IntPtr size = info.HasAlpha
-				 ? nwc.DecodeBGRAInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, bmpData.Stride)
-				 : nwc.DecodeBGRInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, bmpData.Stride);
+				 ? nwc.DecodeBGRAInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, st)
+				 : nwc.DecodeBGRInto(ptrData, rawWebP.Length, bmpData.Scan0, outputSize, st);
 
 				if (size == IntPtr.Zero)
 				{
@@ -350,28 +350,22 @@ namespace WebPWrapper
 		public static Version GetVersion()
 		{
 			int v = NativeWrapper.Current.GetDecoderVersion();
-			var revision = v % 256;
-			var minor = (v >> 8) % 256;
-			var major = (v >> 16) % 256;
-			return new Version(major, minor, revision);
+			return new Version((v >> 16) % 256, (v >> 8) % 256, v % 256);
 		}
 
 		/// <summary>Get info of WEBP data</summary>
 		/// <param name="rawWebP">The data of WebP</param>
 		public static WebPInfo GetInfo(byte[] rawWebP)
 		{
-			VP8StatusCode result;
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 
 			try
 			{
-				IntPtr ptrRawWebP = pinnedWebP.AddrOfPinnedObject();
-
 				var features = new WebPBitstreamFeatures();
-				result = NativeWrapper.Current.GetFeatures(ptrRawWebP, rawWebP.Length, ref features);
+				var result = NativeWrapper.Current.GetFeatures(pinnedWebP.AddrOfPinnedObject(), rawWebP.Length, ref features);
 				if (result != 0)
 				{
-					throw new ExternalException("Unable to get features of WebP image. Status is " + result.ToString(), (int)result);
+					throw new ExternalException("Unable to get features of WebP image. Status is " + result, (int)result);
 				}
 				var info = new WebPInfo() { Width = (short)features.Width, Height = (short)features.Height, HasAlpha = features.Has_alpha == 1, IsAnimated = features.Has_animation == 1 };
 
@@ -448,8 +442,6 @@ namespace WebPWrapper
 				Unpin(pinnedResult);
 			}
 		}
-
-
 		#endregion
 
 		#region | Private Methods |
@@ -460,8 +452,6 @@ namespace WebPWrapper
 		/// <returns>Compressed data</returns>
 		private static byte[] AdvancedEncode(Bitmap pixelMap, WebPConfig config, bool info, out WebPAuxStats stats)
 		{
-			byte[] rawWebP = null;
-			byte[] dataWebp = null;
 			var wpic = new WebPPicture();
 			BitmapData bmpData = null;
 			IntPtr ptrStats = IntPtr.Zero;
@@ -493,8 +483,7 @@ namespace WebPWrapper
 				if (pixelMap.PixelFormat == PixelFormat.Format32bppArgb)
 				{
 					//Put the bitmap contents in WebPPicture instance
-					int result = nwc.ImportBGRA(ref wpic, bmpData.Scan0, bmpData.Stride);
-					if (result != 1)
+					if (nwc.ImportBGRA(ref wpic, bmpData.Scan0, bmpData.Stride) != 1)
 					{
 						throw new Exception("Can´t allocate memory in WebPPictureImportBGRA");
 					}
@@ -503,8 +492,7 @@ namespace WebPWrapper
 				else
 				{
 					//Put the bitmap contents in WebPPicture instance
-					int result = nwc.ImportBGR(ref wpic, bmpData.Scan0, bmpData.Stride);
-					if (result != 1)
+					if (nwc.ImportBGR(ref wpic, bmpData.Scan0, bmpData.Stride) != 1)
 					{
 						throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
 					}
@@ -519,7 +507,7 @@ namespace WebPWrapper
 					wpic.stats = ptrStats;
 				}
 
-				dataWebp = new byte[Math.Max(1024, checked(pixelMap.Width * pixelMap.Height * 2))];
+				var dataWebp = new byte[Math.Max(1024, checked(pixelMap.Width * pixelMap.Height * 2))];
 				pinnedArrayHandle = GCHandle.Alloc(dataWebp, GCHandleType.Pinned);
 				IntPtr initPtr = pinnedArrayHandle.AddrOfPinnedObject();
 				wpic.custom_ptr = initPtr;
@@ -538,8 +526,8 @@ namespace WebPWrapper
 				bmpData = null;
 
 				//Copy webpData to rawWebP
-				int size = (int)((long)wpic.custom_ptr - (long)initPtr);
-				rawWebP = new byte[size];
+				int size = checked((int)((long)wpic.custom_ptr - (long)initPtr));
+				var rawWebP = new byte[size];
 #if DEBUG
 				int le = dataWebp.Length;
 				if ((le > 4096) && (le > (size * 5))) {
@@ -612,12 +600,13 @@ namespace WebPWrapper
 				}
 
 				// Set up decode options
-				config.options.bypass_filtering = fancy ? 0 : 1;
-				config.options.no_fancy_upsampling = fancy ? 0 : 1;
-				config.options.use_threads = 1;
-				config.options.use_scaling = 1;
-				config.options.scaled_width = width;
-				config.options.scaled_height = height;
+				var cop = config.options;
+				cop.bypass_filtering = fancy ? 0 : 1;
+				cop.no_fancy_upsampling = fancy ? 0 : 1;
+				cop.use_threads = 1;
+				cop.use_scaling = 1;
+				cop.scaled_width = width;
+				cop.scaled_height = height;
 
 				return CoreDecode(rawWebP, width, height, fancy, out bmpData, ref config, nwc, ptrRawWebP);
 			}
@@ -632,18 +621,19 @@ namespace WebPWrapper
 		{
 			//Create a BitmapData and Lock all pixels to be written
 			bool blnAlpha = fancy && (config.input.Has_alpha == 1);
-			config.output.colorspace = blnAlpha ? WEBP_CSP_MODE.MODE_bgrA : WEBP_CSP_MODE.MODE_BGR;
+			var cou = config.output;
+			cou.colorspace = blnAlpha ? WEBP_CSP_MODE.MODE_bgrA : WEBP_CSP_MODE.MODE_BGR;
 			var pixelMap = new Bitmap(config.input.Width, config.input.Height,
 			 blnAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb);
 			bmpData = LockAllBits(pixelMap, ImageLockMode.WriteOnly);
 
 			// Specify the output format
-			config.output.u.RGBA.rgba = bmpData.Scan0;
-			config.output.u.RGBA.stride = bmpData.Stride;
-			config.output.u.RGBA.size = (UIntPtr)(height * bmpData.Stride);
-			config.output.height = height;
-			config.output.width = width;
-			config.output.is_external_memory = 1;
+			cou.u.RGBA.rgba = bmpData.Scan0;
+			cou.u.RGBA.stride = bmpData.Stride;
+			cou.u.RGBA.size = (UIntPtr)(height * bmpData.Stride);
+			cou.height = height;
+			cou.width = width;
+			cou.is_external_memory = 1;
 
 			// Decode
 			var result = nwc.Decode(ptrRawWebP, rawWebP.Length, ref config);
@@ -671,11 +661,14 @@ namespace WebPWrapper
 			wpicSource.width = source.Width;
 			wpicSource.height = source.Height;
 
+			var s0 = sourceBmpData.Scan0;
+			var st = sourceBmpData.Stride;
+
 			//Put the source bitmap contents in WebPPicture instance
 			if (sourceBmpData.PixelFormat == PixelFormat.Format32bppArgb)
 			{
 				wpicSource.use_argb = 1;
-				if (nwc.ImportBGRA(ref wpicSource, sourceBmpData.Scan0, sourceBmpData.Stride) != 1)
+				if (nwc.ImportBGRA(ref wpicSource, s0, st) != 1)
 				{
 					throw new Exception("Can't allocate memory in WebPPictureImportBGR");
 				}
@@ -683,7 +676,7 @@ namespace WebPWrapper
 			else
 			{
 				wpicSource.use_argb = 0;
-				if (nwc.ImportBGR(ref wpicSource, sourceBmpData.Scan0, sourceBmpData.Stride) != 1)
+				if (nwc.ImportBGR(ref wpicSource, s0, st) != 1)
 				{
 					throw new Exception("Can't allocate memory in WebPPictureImportBGR");
 				}
@@ -736,6 +729,8 @@ namespace WebPWrapper
 
 		private static void TestPixelMapBeforeEncode(Bitmap pixelMap, out short w, out short h)
 		{
+			const int WEBP_MAX_DIMENSION = 16383;
+
 			w = checked((short)pixelMap.Width);
 			h = checked((short)pixelMap.Height);
 
@@ -748,7 +743,8 @@ namespace WebPWrapper
 			{
 				throw new NotSupportedException("Bitmap dimensions are too large. Maximum is 16383x16383 pixels.");
 			}
-			if (pixelMap.PixelFormat != PixelFormat.Format24bppRgb && pixelMap.PixelFormat != PixelFormat.Format32bppArgb)
+			var pf = pixelMap.PixelFormat;
+			if (pf != PixelFormat.Format24bppRgb && pf != PixelFormat.Format32bppArgb)
 			{
 				throw new NotSupportedException("Only Format24bppRgb and Format32bppArgb are supported pixel formats.");
 			}
