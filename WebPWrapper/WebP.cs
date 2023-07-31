@@ -54,12 +54,14 @@ namespace WebPWrapper
 		{
 			Bitmap pixelMap = null;
 			BitmapData bmpData = null;
+			int st;
+			WebPInfo info;
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 
 			try
 			{
 				//Get image width and height
-				WebPInfo info = GetInfo(rawWebP);
+				info = GetInfo(rawWebP);
 
 				//Create a BitmapData and Lock all pixels to be written
 				pixelMap = new Bitmap(info.Width, info.Height, info.HasAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb);
@@ -67,7 +69,7 @@ namespace WebPWrapper
 				bmpData = LockAllBits(pixelMap, ImageLockMode.WriteOnly);
 
 				//Uncompress the image
-				var st = bmpData.Stride;
+				st = bmpData.Stride;
 				int outputSize = st * info.Height;
 				IntPtr ptrData = pinnedWebP.AddrOfPinnedObject();
 				var nwc = NativeWrapper.Current;
@@ -94,14 +96,15 @@ namespace WebPWrapper
 		/// <returns>Bitmap with the WebP image</returns>
 		public static Bitmap Decode(byte[] rawWebP, WebPDecoderOptions options)
 		{
-			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
+			var config = new WebPDecoderConfig();
+			var nwc = NativeWrapper.Current;
 			Bitmap pixelMap = null;
-			BitmapData bmpData = null;
 			VP8StatusCode result;
+			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
+			BitmapData bmpData = null;
+
 			try
 			{
-				var config = new WebPDecoderConfig();
-				var nwc = NativeWrapper.Current;
 				if (nwc.InitConfig(ref config) == 0)
 				{
 					throw new Exception("WebPInitDecoderConfig failed. Wrong version?");
@@ -157,7 +160,7 @@ namespace WebPWrapper
 				cop.flip = options.flip;
 				cop.alpha_dithering_strength = options.alpha_dithering_strength;
 
-				return CoreDecode(rawWebP, (short)pixelMap.Width, (short)pixelMap.Height, true, out bmpData, ref config, nwc, ptrRawWebP);
+				return CoreDecode(ref config, out bmpData, nwc, (short)pixelMap.Height, (short)pixelMap.Width, true, rawWebP, ptrRawWebP);
 			}
 			finally
 			{
@@ -357,30 +360,24 @@ namespace WebPWrapper
 		/// <param name="rawWebP">The data of WebP</param>
 		public static WebPInfo GetInfo(byte[] rawWebP)
 		{
+			var features = new WebPBitstreamFeatures();
+			int fmt;
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 
 			try
 			{
-				var features = new WebPBitstreamFeatures();
 				var result = NativeWrapper.Current.GetFeatures(pinnedWebP.AddrOfPinnedObject(), rawWebP.Length, ref features);
 				if (result != 0)
 				{
 					throw new ExternalException("Unable to get features of WebP image. Status is " + result, (int)result);
 				}
-				var info = new WebPInfo() { Width = (short)features.Width, Height = (short)features.Height, HasAlpha = features.Has_alpha == 1, IsAnimated = features.Has_animation == 1 };
-
-				switch (features.Format)
-				{
-					case 1:
-						info.Format = "lossy";
-						break;
-					case 2:
-						info.Format = "lossless";
-						break;
-					default:
-						info.Format = "undefined";
-						break;
-				}
+				var info = new WebPInfo();
+				info.Width = (short)features.Width;
+				info.Height = (short)features.Height;
+				info.HasAlpha = features.Has_alpha == 1;
+				info.IsAnimated = features.Has_animation == 1;
+				fmt = features.Format;
+				info.Format = (fmt == 1) ? "lossy" : (fmt == 2) ? "lossless" : "undefined";
 				return info;
 			}
 			finally
@@ -396,13 +393,14 @@ namespace WebPWrapper
 		/// <returns>dB in the Y/U/V/Alpha/All order</returns>
 		public static float[] GetPictureDistortion(Bitmap source, Bitmap reference, DistorsionMetric metricType)
 		{
-			var wpicSource = new WebPPicture();
-			var wpicReference = new WebPPicture();
+			var nwc = NativeWrapper.Current;
+			float[] result = new float[5];
 			BitmapData sourceBmpData = null;
 			BitmapData referenceBmpData = null;
-			float[] result = new float[5];
+			var wpicSource = new WebPPicture();
+			var wpicReference = new WebPPicture();
 			var pinnedResult = GCHandle.Alloc(result, GCHandleType.Pinned);
-			var nwc = NativeWrapper.Current;
+
 			try
 			{
 				if (source == null)
@@ -415,7 +413,8 @@ namespace WebPWrapper
 				}
 				if (metricType > DistorsionMetric.LightweightSimilarity)
 				{
-					throw new InvalidEnumArgumentException("Bad metric_type. Use 0 = PSNR, 1 = SSIM, 2 = LSIM");
+					throw new InvalidEnumArgumentException("Bad metric type. Use 0 = PSNR, 1 = SSIM, 2 = LSIM",
+					 (int)metricType, typeof(DistorsionMetric));
 				}
 				if (source.Width != reference.Width || source.Height != reference.Height)
 				{
@@ -455,8 +454,8 @@ namespace WebPWrapper
 			var wpic = new WebPPicture();
 			BitmapData bmpData = null;
 			IntPtr ptrStats = IntPtr.Zero;
-			var pinnedArrayHandle = new GCHandle();
 			var nwc = NativeWrapper.Current;
+			var pinnedArrayHandle = new GCHandle();
 			try
 			{
 				//Validate the configuration
@@ -476,27 +475,7 @@ namespace WebPWrapper
 					throw new Exception("Can´t initialize WebPPictureInit");
 				}
 
-				wpic.width = w;
-				wpic.height = h;
-				wpic.use_argb = 1;
-
-				if (pixelMap.PixelFormat == PixelFormat.Format32bppArgb)
-				{
-					//Put the bitmap contents in WebPPicture instance
-					if (nwc.ImportBGRA(ref wpic, bmpData.Scan0, bmpData.Stride) != 1)
-					{
-						throw new Exception("Can´t allocate memory in WebPPictureImportBGRA");
-					}
-					wpic.colorspace = (uint)WEBP_CSP_MODE.MODE_bgrA;
-				}
-				else
-				{
-					//Put the bitmap contents in WebPPicture instance
-					if (nwc.ImportBGR(ref wpic, bmpData.Scan0, bmpData.Stride) != 1)
-					{
-						throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
-					}
-				}
+				wpic = ImportColorData(wpic, bmpData, nwc, true);
 
 				//Set up statistics of compression
 				if (info)
@@ -561,11 +540,46 @@ namespace WebPWrapper
 			}
 		}
 
+		private static WebPPicture ImportColorData(WebPPicture wpic, BitmapData bmpData, INativeWrapper nwc, bool forceArgb)
+		{
+			wpic.width = bmpData.Width;
+			wpic.height = bmpData.Height;
+			bool blnAlpha = (bmpData.PixelFormat == PixelFormat.Format32bppArgb);
+			wpic.use_argb = (forceArgb || blnAlpha) ? 1 : 0;
+
+			var s0 = bmpData.Scan0;
+			var st = bmpData.Stride;
+
+			if (blnAlpha)
+			{
+				//Put the bitmap contents in WebPPicture instance
+				if (nwc.ImportBGRA(ref wpic, s0, st) != 1)
+				{
+					throw new Exception("Can´t allocate memory in WebPPictureImportBGRA");
+				}
+				if (forceArgb)
+				{
+					wpic.colorspace = (uint)WEBP_CSP_MODE.MODE_bgrA;
+				}
+			}
+			else
+			{
+				//Put the bitmap contents in WebPPicture instance
+				if (nwc.ImportBGR(ref wpic, s0, st) != 1)
+				{
+					throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
+				}
+			}
+
+			return wpic;
+		}
+
 		private static int MyWriter([In] IntPtr data, UIntPtr data_size, ref WebPPicture picture)
 		{
-			NativeWrapper.Current.CopyMemory(picture.custom_ptr, data, (uint)data_size);
+			var ptrCustom = picture.custom_ptr;
+			NativeWrapper.Current.CopyMemory(ptrCustom, data, (uint)data_size);
 			//picture.custom_ptr = IntPtr.Add(picture.custom_ptr, (int)data_size);   //Only in .NET > 4.0
-			picture.custom_ptr = new IntPtr(picture.custom_ptr.ToInt64() + (int)data_size);
+			picture.custom_ptr = new IntPtr(ptrCustom.ToInt64() + (int)data_size);
 			return 1;
 		}
 
@@ -576,6 +590,9 @@ namespace WebPWrapper
 
 		private static Bitmap GetThumbnail(byte[] rawWebP, short width, short height, bool fancy)
 		{
+			var nwc = NativeWrapper.Current;
+			IntPtr ptrRawWebP;
+			VP8StatusCode result;
 			var pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 			Bitmap pixelMap = null;
 			BitmapData bmpData = null;
@@ -583,16 +600,15 @@ namespace WebPWrapper
 			try
 			{
 				var config = new WebPDecoderConfig();
-				var nwc = NativeWrapper.Current;
 				if (nwc.InitConfig(ref config) == 0)
 				{
 					throw new Exception("WebPInitDecoderConfig failed. Wrong version?");
 				}
 
-				IntPtr ptrRawWebP = pinnedWebP.AddrOfPinnedObject();
+				ptrRawWebP = pinnedWebP.AddrOfPinnedObject();
 				if (fancy)
 				{
-					var result = nwc.GetFeatures(ptrRawWebP, rawWebP.Length, ref config.input);
+					result = nwc.GetFeatures(ptrRawWebP, rawWebP.Length, ref config.input);
 					if (result != VP8StatusCode.VP8_STATUS_OK)
 					{
 						throw new ExternalException("Failed WebPGetFeatures with error " + result, (int)result);
@@ -608,7 +624,7 @@ namespace WebPWrapper
 				cop.scaled_width = width;
 				cop.scaled_height = height;
 
-				return CoreDecode(rawWebP, width, height, fancy, out bmpData, ref config, nwc, ptrRawWebP);
+				return CoreDecode(ref config, out bmpData, nwc, height, width, fancy, rawWebP, ptrRawWebP);
 			}
 			finally
 			{
@@ -616,8 +632,8 @@ namespace WebPWrapper
 			}
 		}
 
-		private static Bitmap CoreDecode(byte[] rawWebP, short width, short height, bool fancy,
-		out BitmapData bmpData, ref WebPDecoderConfig config, INativeWrapper nwc, IntPtr ptrRawWebP)
+		private static Bitmap CoreDecode(ref WebPDecoderConfig config, out BitmapData bmpData, INativeWrapper nwc,
+		short height, short width, bool fancy, byte[] rawWebP, IntPtr ptrRawWebP)
 		{
 			//Create a BitmapData and Lock all pixels to be written
 			bool blnAlpha = fancy && (config.input.Has_alpha == 1);
@@ -658,39 +674,19 @@ namespace WebPWrapper
 				throw new Exception("Can´t initialize WebPPictureInit");
 			}
 
-			wpicSource.width = source.Width;
-			wpicSource.height = source.Height;
-
-			var s0 = sourceBmpData.Scan0;
-			var st = sourceBmpData.Stride;
-
-			//Put the source bitmap contents in WebPPicture instance
-			if (sourceBmpData.PixelFormat == PixelFormat.Format32bppArgb)
-			{
-				wpicSource.use_argb = 1;
-				if (nwc.ImportBGRA(ref wpicSource, s0, st) != 1)
-				{
-					throw new Exception("Can't allocate memory in WebPPictureImportBGR");
-				}
-			}
-			else
-			{
-				wpicSource.use_argb = 0;
-				if (nwc.ImportBGR(ref wpicSource, s0, st) != 1)
-				{
-					throw new Exception("Can't allocate memory in WebPPictureImportBGR");
-				}
-			}
+			ImportColorData(wpicSource, sourceBmpData, nwc, false);
 		}
 
 		private static byte[] CoreEncode(Bitmap pixelMap, byte? quality)
 		{
+			var nwc = NativeWrapper.Current;
+			BitmapData bmpData = null;
+			IntPtr bs0;
+			int bst;
 			short w, h;
 			TestPixelMapBeforeEncode(pixelMap, out w, out h);
-
-			BitmapData bmpData = null;
 			IntPtr unmanagedData = IntPtr.Zero;
-			var nwc = NativeWrapper.Current;
+
 			try
 			{
 				//Get pixelMap data
@@ -699,8 +695,8 @@ namespace WebPWrapper
 				//Compress the pixelMap data
 				int size;
 				bool blnWithoutAlpha = (pixelMap.PixelFormat == PixelFormat.Format24bppRgb);
-				var bs0 = bmpData.Scan0;
-				var bst = bmpData.Stride;
+				bs0 = bmpData.Scan0;
+				bst = bmpData.Stride;
 				if (quality.HasValue)
 				{
 					float qf = quality.Value;
