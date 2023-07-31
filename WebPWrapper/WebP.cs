@@ -555,7 +555,7 @@ namespace WebPWrapper
 				//Put the bitmap contents in WebPPicture instance
 				if (nwc.ImportBGRA(ref wpic, s0, st) != 1)
 				{
-					throw new Exception("Can´t allocate memory in WebPPictureImportBGRA");
+					throw new OutOfMemoryException("Can´t allocate memory in WebPPictureImportBGRA");
 				}
 				if (forceArgb)
 				{
@@ -567,7 +567,7 @@ namespace WebPWrapper
 				//Put the bitmap contents in WebPPicture instance
 				if (nwc.ImportBGR(ref wpic, s0, st) != 1)
 				{
-					throw new Exception("Can´t allocate memory in WebPPictureImportBGR");
+					throw new OutOfMemoryException("Can´t allocate memory in WebPPictureImportBGR");
 				}
 			}
 
