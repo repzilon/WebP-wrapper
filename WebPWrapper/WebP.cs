@@ -36,6 +36,13 @@ using System.Runtime.InteropServices;
 
 namespace WebPWrapper
 {
+	internal enum EncodingMode : byte
+	{
+		Lossy = 0,
+		Lossless,
+		NearLossless
+	}
+
 	public static class WebP
 	{
 		#region | Public Decode Functions |
@@ -215,12 +222,24 @@ namespace WebPWrapper
 			var config = new WebPConfig();
 
 			//Set compression parameters
-			bool blnLossless = Single.IsPositiveInfinity(quality);
-			if (blnLossless)
+			EncodingMode mode;
+			float q2;
+			if (Single.IsPositiveInfinity(quality))
 			{
-				quality = (speed + 1) * 10;
+				mode = EncodingMode.Lossless;
+				q2 = (speed + 1) * 10;
 			}
-			if (nwc.InitConfig(ref config, preset, quality) == 0)
+			else if (quality < 0)
+			{
+				mode = EncodingMode.NearLossless;
+				q2 = (speed + 1) * 10;
+			}
+			else
+			{
+				mode = EncodingMode.Lossy;
+				q2 = quality;
+			}
+			if (nwc.InitConfig(ref config, preset, q2) == 0)
 			{
 				throw new Exception("Can't configure preset");
 			}
@@ -228,6 +247,41 @@ namespace WebPWrapper
 			config.thread_level = 1;
 			config.alpha_filtering = 2;
 			config.use_sharp_yuv = 1;
+
+			var blnNewVersion = nwc.GetDecoderVersion() > 1082;
+			if (mode != EncodingMode.NearLossless)
+			{
+				config.method = speed > 6 ? 6 : speed;
+				config.quality = q2;
+			}
+			if (mode == EncodingMode.Lossy)
+			{
+				// Add additional tuning:
+				config.autofilter = 1;
+				config.segments = 4;
+				config.partitions = 3;
+				config.alpha_quality = (int)quality;
+
+				// Old version does not support preprocessing 4
+				config.preprocessing = blnNewVersion ? 4 : 3;
+			}
+			else
+			{
+				if ((mode == EncodingMode.NearLossless || blnNewVersion) &&
+				(nwc.ConfigLosslessPreset(ref config, speed) == 0))
+				{
+					throw new Exception("Can't configure lossless preset");
+				}
+				if (mode == EncodingMode.NearLossless)
+				{
+					config.near_lossless = (int)(-quality);
+				}
+				else if (!blnNewVersion)
+				{
+					config.lossless = 1;
+				}
+				config.exact = 0;
+			}
 
 			return config;
 		}
@@ -242,20 +296,7 @@ namespace WebPWrapper
 		public static byte[] EncodeLossy(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
 			//Set compression parameters
-			var nwc = NativeWrapper.Current;
-			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, quality, speed);
-
-			// Add additional tuning:
-			config.method = speed > 6 ? 6 : speed;
-			config.quality = quality;
-			config.autofilter = 1;
-			config.segments = 4;
-			config.partitions = 3;
-			config.alpha_quality = quality;
-
-			// Old version does not support preprocessing 4
-			config.preprocessing = nwc.GetDecoderVersion() > 1082 ? 4 : 3;
-
+			var config = ConfigureEncoding(NativeWrapper.Current, WebPPreset.WEBP_PRESET_DEFAULT, quality, speed);
 			return AdvancedEncode(pixelMap, config, info, out stats);
 		}
 
@@ -274,21 +315,7 @@ namespace WebPWrapper
 		public static byte[] EncodeLossless(Bitmap pixelMap, byte speed)
 		{
 			//Set compression parameters
-			var nwc = NativeWrapper.Current;
-			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed);
-
-			//Old version of DLL does not support info and WebPConfigLosslessPreset
-			if (nwc.GetDecoderVersion() <= 1082)
-			{
-				config.lossless = 1;
-				config.method = speed > 6 ? 6 : speed;
-				config.quality = (speed + 1) * 10;
-			}
-			else if (nwc.ConfigLosslessPreset(ref config, speed) == 0)
-			{
-				throw new Exception("Can´t configure lossless preset");
-			}
-			config.exact = 0;
+			var config = ConfigureEncoding(NativeWrapper.Current, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed);
 
 			WebPAuxStats stats;
 			return AdvancedEncode(pixelMap, config, false, out stats);
@@ -320,15 +347,7 @@ namespace WebPWrapper
 			}
 
 			//Set compression parameters
-			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed);
-
-			if (nwc.ConfigLosslessPreset(ref config, speed) == 0)
-			{
-				throw new Exception("Can´t configure lossless preset");
-			}
-
-			config.near_lossless = quality;
-			config.exact = 0;
+			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, -quality, speed);
 
 			return AdvancedEncode(pixelMap, config, info, out stats);
 		}
