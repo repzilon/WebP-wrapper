@@ -216,7 +216,7 @@ namespace WebPWrapper
 			return CoreEncode(pixelMap, quality);
 		}
 
-		private static WebPConfig ConfigureEncoding(WebPPreset preset, float quality, byte speed)
+		private static WebPConfig ConfigureEncoding(EncodingMode mode, WebPPreset preset, float quality, byte speed)
 		{
 			var nwc = NativeWrapper.Current;
 
@@ -224,23 +224,7 @@ namespace WebPWrapper
 			var config = new WebPConfig();
 
 			//Set compression parameters
-			EncodingMode mode;
-			float q2;
-			if (Single.IsPositiveInfinity(quality))
-			{
-				mode = EncodingMode.Lossless;
-				q2 = (speed + 1) * 10;
-			}
-			else if (quality < 0)
-			{
-				mode = EncodingMode.NearLossless;
-				q2 = (speed + 1) * 10;
-			}
-			else
-			{
-				mode = EncodingMode.Lossy;
-				q2 = quality;
-			}
+			float q2 = (mode == EncodingMode.Lossy) ? quality : (speed + 1) * 10;
 			if (nwc.InitConfig(ref config, preset, q2) == 0)
 			{
 				throw new Exception("Can't configure preset");
@@ -276,7 +260,7 @@ namespace WebPWrapper
 				}
 				if (mode == EncodingMode.NearLossless)
 				{
-					config.near_lossless = (int)(-quality);
+					config.near_lossless = (int)quality;
 				}
 				else if (!blnNewVersion)
 				{
@@ -297,7 +281,8 @@ namespace WebPWrapper
 		/// <returns>Compressed data</returns>
 		public static byte[] EncodeLossy(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
-			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, quality, speed), info, out stats);
+			return AdvancedEncode(pixelMap,
+			 ConfigureEncoding(EncodingMode.Lossy, WebPPreset.WEBP_PRESET_DEFAULT, quality, speed), info, out stats);
 		}
 
 		/// <summary>Lossless encoding bitmap to WebP (Simple encoding API)</summary>
@@ -315,7 +300,8 @@ namespace WebPWrapper
 		public static byte[] EncodeLossless(Bitmap pixelMap, byte speed)
 		{
 			WebPAuxStats stats;
-			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed), false, out stats);
+			return AdvancedEncode(pixelMap,
+			 ConfigureEncoding(EncodingMode.Lossless, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed), false, out stats);
 		}
 
 		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed = 9)
@@ -341,7 +327,8 @@ namespace WebPWrapper
 			{
 				throw new NotSupportedException("This DLL version does not support EncodeNearLossless");
 			}
-			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, -quality, speed), info, out stats);
+			return AdvancedEncode(pixelMap,
+			 ConfigureEncoding(EncodingMode.NearLossless, WebPPreset.WEBP_PRESET_DEFAULT, quality, speed), info, out stats);
 		}
 		#endregion
 
