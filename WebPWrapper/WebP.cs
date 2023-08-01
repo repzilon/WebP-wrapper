@@ -224,6 +224,10 @@ namespace WebPWrapper
 			{
 				throw new Exception("Can't configure preset");
 			}
+			config.pass = speed + 1;
+			config.thread_level = 1;
+			config.alpha_filtering = 2;
+			config.use_sharp_yuv = 1;
 
 			return config;
 		}
@@ -243,19 +247,14 @@ namespace WebPWrapper
 
 			// Add additional tuning:
 			config.method = speed > 6 ? 6 : speed;
-
 			config.quality = quality;
 			config.autofilter = 1;
-			config.pass = speed + 1;
 			config.segments = 4;
 			config.partitions = 3;
-			config.thread_level = 1;
 			config.alpha_quality = quality;
-			config.alpha_filtering = 2;
 
 			// Old version does not support preprocessing 4
 			config.preprocessing = nwc.GetDecoderVersion() > 1082 ? 4 : 3;
-			config.use_sharp_yuv = 1;
 
 			return AdvancedEncode(pixelMap, config, info, out stats);
 		}
@@ -279,24 +278,16 @@ namespace WebPWrapper
 			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed);
 
 			//Old version of DLL does not support info and WebPConfigLosslessPreset
-			if (nwc.GetDecoderVersion() > 1082)
-			{
-				if (nwc.ConfigLosslessPreset(ref config, speed) == 0)
-				{
-					throw new Exception("Can´t configure lossless preset");
-				}
-			}
-			else
+			if (nwc.GetDecoderVersion() <= 1082)
 			{
 				config.lossless = 1;
 				config.method = speed > 6 ? 6 : speed;
-
 				config.quality = (speed + 1) * 10;
 			}
-			config.pass = speed + 1;
-			config.thread_level = 1;
-			config.alpha_filtering = 2;
-			config.use_sharp_yuv = 1;
+			else if (nwc.ConfigLosslessPreset(ref config, speed) == 0)
+			{
+				throw new Exception("Can´t configure lossless preset");
+			}
 			config.exact = 0;
 
 			WebPAuxStats stats;
@@ -336,11 +327,7 @@ namespace WebPWrapper
 				throw new Exception("Can´t configure lossless preset");
 			}
 
-			config.pass = speed + 1;
 			config.near_lossless = quality;
-			config.thread_level = 1;
-			config.alpha_filtering = 2;
-			config.use_sharp_yuv = 1;
 			config.exact = 0;
 
 			return AdvancedEncode(pixelMap, config, info, out stats);
