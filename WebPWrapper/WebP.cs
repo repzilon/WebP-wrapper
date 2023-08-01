@@ -36,13 +36,6 @@ using System.Runtime.InteropServices;
 
 namespace WebPWrapper
 {
-	internal enum EncodingMode : byte
-	{
-		Lossy = 0,
-		Lossless,
-		NearLossless
-	}
-
 	public static class WebP
 	{
 		#region | Public Decode Functions |

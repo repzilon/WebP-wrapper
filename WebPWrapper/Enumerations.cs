@@ -37,7 +37,7 @@ namespace WebPWrapper
 		/// <summary>Memory error while flushing bits.</summary>
 		VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY,
 
-		/// <summary>A  pointer parameter is NULL.</summary>
+		/// <summary>A pointer parameter is NULL.</summary>
 		VP8_ENC_ERROR_NULL_PARAMETER,
 
 		/// <summary>Configuration is invalid.</summary>
@@ -76,14 +76,17 @@ namespace WebPWrapper
 
 		/// <summary>Configuration is invalid.</summary>
 		VP8_STATUS_INVALID_PARAM,
+
 		VP8_STATUS_BITSTREAM_ERROR,
 
 		/// <summary>Configuration is invalid.</summary>
 		VP8_STATUS_UNSUPPORTED_FEATURE,
+
 		VP8_STATUS_SUSPENDED,
 
 		/// <summary>Abort request by user.</summary>
 		VP8_STATUS_USER_ABORT,
+
 		VP8_STATUS_NOT_ENOUGH_DATA,
 	}
 
@@ -180,5 +183,12 @@ namespace WebPWrapper
 		StructuralSimilarity,
 		LightweightSimilarity
 	}
-	#endregion
+
+    internal enum EncodingMode
+    {
+        Lossy = 0,
+        Lossless,
+        NearLossless
+    }
+    #endregion
 }
