@@ -216,8 +216,10 @@ namespace WebPWrapper
 			return CoreEncode(pixelMap, quality);
 		}
 
-		private static WebPConfig ConfigureEncoding(INativeWrapper nwc, WebPPreset preset, float quality, byte speed)
+		private static WebPConfig ConfigureEncoding(WebPPreset preset, float quality, byte speed)
 		{
+			var nwc = NativeWrapper.Current;
+
 			//Initialize configuration structure
 			var config = new WebPConfig();
 
@@ -295,9 +297,7 @@ namespace WebPWrapper
 		/// <returns>Compressed data</returns>
 		public static byte[] EncodeLossy(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
-			//Set compression parameters
-			var config = ConfigureEncoding(NativeWrapper.Current, WebPPreset.WEBP_PRESET_DEFAULT, quality, speed);
-			return AdvancedEncode(pixelMap, config, info, out stats);
+			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, quality, speed), info, out stats);
 		}
 
 		/// <summary>Lossless encoding bitmap to WebP (Simple encoding API)</summary>
@@ -314,11 +314,8 @@ namespace WebPWrapper
 		/// <returns>Compressed data</returns>
 		public static byte[] EncodeLossless(Bitmap pixelMap, byte speed)
 		{
-			//Set compression parameters
-			var config = ConfigureEncoding(NativeWrapper.Current, WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed);
-
 			WebPAuxStats stats;
-			return AdvancedEncode(pixelMap, config, false, out stats);
+			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, Single.PositiveInfinity, speed), false, out stats);
 		}
 
 		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed = 9)
@@ -339,17 +336,12 @@ namespace WebPWrapper
 		/// <returns>Compress data</returns>
 		public static byte[] EncodeNearLossless(Bitmap pixelMap, byte quality, byte speed, bool info, out WebPAuxStats stats)
 		{
-			var nwc = NativeWrapper.Current;
 			//test DLL version
-			if (nwc.GetDecoderVersion() <= 1082)
+			if (NativeWrapper.Current.GetDecoderVersion() <= 1082)
 			{
 				throw new NotSupportedException("This DLL version does not support EncodeNearLossless");
 			}
-
-			//Set compression parameters
-			var config = ConfigureEncoding(nwc, WebPPreset.WEBP_PRESET_DEFAULT, -quality, speed);
-
-			return AdvancedEncode(pixelMap, config, info, out stats);
+			return AdvancedEncode(pixelMap, ConfigureEncoding(WebPPreset.WEBP_PRESET_DEFAULT, -quality, speed), info, out stats);
 		}
 		#endregion
 
