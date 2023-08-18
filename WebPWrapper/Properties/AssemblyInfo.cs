@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("WebP-Wrapper")]
-[assembly: AssemblyCopyright("Copyright © 2012-2020 Jose M. Piñeiro, 2021 René Rhéaume")]
+[assembly: AssemblyCopyright("Copyright © 2012-2020 Jose M. Piñeiro, 2021-2023 René Rhéaume. MIT-licensed.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
