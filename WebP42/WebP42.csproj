@@ -40,6 +40,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.convertsingle.cs" />
+    <Compile Include="RunSummary.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebPWrapper\WebPWrapper.csproj">
