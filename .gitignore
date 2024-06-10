@@ -3,7 +3,6 @@
 .vs/
 *.user
 .DS_Store
-
 _ReSharper.Caches/*
 *.cache
-
+*.suo
