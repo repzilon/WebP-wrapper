@@ -2,9 +2,9 @@
 
 namespace WebPWrapper
 {
-    #region | Predefined |
-    /// <summary>Enumerate some predefined settings for WebPConfig, depending on the type of source picture. These presets are used when calling WebPConfigPreset().</summary>
-    internal enum WebPPreset
+	#region | Predefined |
+	/// <summary>Enumerate some predefined settings for WebPConfig, depending on the type of source picture. These presets are used when calling WebPConfigPreset().</summary>
+	internal enum WebPPreset
 	{
 		/// <summary>Default preset.</summary>
 		WEBP_PRESET_DEFAULT = 0,
@@ -184,11 +184,11 @@ namespace WebPWrapper
 		LightweightSimilarity
 	}
 
-    internal enum EncodingMode
-    {
-        Lossy = 0,
-        Lossless,
-        NearLossless
-    }
-    #endregion
+	internal enum EncodingMode
+	{
+		Lossy = 0,
+		Lossless,
+		NearLossless
+	}
+	#endregion
 }

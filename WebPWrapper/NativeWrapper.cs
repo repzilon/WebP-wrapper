@@ -20,7 +20,7 @@ namespace WebPWrapper
 				}
 			} else {
 				throw new PlatformNotSupportedException("The current operating system is not supported by this wrapper, only Windows for now.");
-  			}
+			}
 		}
 	}
 

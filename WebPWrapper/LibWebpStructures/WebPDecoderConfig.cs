@@ -4,16 +4,16 @@
 
 namespace WebPWrapper
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct WebPDecoderConfig
-    {
-        /// <summary>Immutable bit stream features (optional)</summary>
-        public WebPBitstreamFeatures input;
+	[StructLayout(LayoutKind.Sequential)]
+	internal struct WebPDecoderConfig
+	{
+		/// <summary>Immutable bit stream features (optional)</summary>
+		public WebPBitstreamFeatures input;
 
-        /// <summary>Output buffer (can point to external memory)</summary>
-        public WebPDecBuffer output;
+		/// <summary>Output buffer (can point to external memory)</summary>
+		public WebPDecBuffer output;
 
-        /// <summary>Decoding options</summary>
-        public WebPDecoderOptions options;
-    }
+		/// <summary>Decoding options</summary>
+		public WebPDecoderOptions options;
+	}
 }
