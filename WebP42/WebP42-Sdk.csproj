@@ -12,6 +12,7 @@
     <RootNamespace>WebP42</RootNamespace>
     <AssemblyName>WebP42</AssemblyName>
 	<NoWarn>NETSDK1138;NU1902;NU1903</NoWarn>
+	<RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebPWrapper\WebPWrapper-Sdk.csproj" />

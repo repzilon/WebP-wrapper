@@ -11,6 +11,7 @@
     <AssemblyName>WebPWrapper</AssemblyName>
 	<RootNamespace>WebPWrapper</RootNamespace>
 	<NoWarn>NETSDK1138;NU1902;NU1903</NoWarn>
+	<RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DocumentationFile>WebPWrapper.xml</DocumentationFile>
