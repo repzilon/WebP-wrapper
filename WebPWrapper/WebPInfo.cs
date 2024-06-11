@@ -21,7 +21,7 @@ namespace WebPWrapper
 			return obj is WebPInfo && this.Equals((WebPInfo)obj);
 		}
 
-		public readonly bool Equals(WebPInfo other)
+		public bool Equals(WebPInfo other)
 		{
 			return Width == other.Width &&
 				   Height == other.Height &&
