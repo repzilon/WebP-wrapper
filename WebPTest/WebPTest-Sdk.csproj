@@ -1,11 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '17.0' ">
+    <TargetFrameworks>net20;net46;netcoreapp3.1;net5.0-windows;net6.0-windows</TargetFrameworks>
+    <NoWarn>NETSDK1138</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' != '17.0' ">
+    <TargetFrameworks>net20;net40;net46</TargetFrameworks>
+  </PropertyGroup>
   <PropertyGroup>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net20</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <DebugType>portable</DebugType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>WebPTest</RootNamespace>
+    <AssemblyName>WebPTest</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

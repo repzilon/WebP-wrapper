@@ -6,3 +6,4 @@
 _ReSharper.Caches/*
 *.cache
 *.suo
+/WebPWrapper/WebPWrapper.xml

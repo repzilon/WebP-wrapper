@@ -1,0 +1,57 @@
+﻿MULTI-TARGETING AND PLATFORM INFO
+=================================
+
+IDE and .NET implementation support
+-----------------------------------
+There will be two sets of .NET targets depending of the IDE used to open the solution.
+
+$(VisualStudioVersion)' != '17.0 :
+	* Visual Studio 2017
+	* Visual Studio 2019
+
+$(VisualStudioVersion)' == '17.0 :
+	* Visual Studio 2022
+	* Visual Studio 2022 for Mac
+
+JetBrains Rider 2024.1 (on Windows and Mac) and DotDevelop (a successor fork of MonoDevelop)
+support is planned. Versions of Visual Studio older than 2017 cannot open SDK-style projects.
+There is still a separate Visual Studio 2010 solution targeting .NET Framework 2.0, if you need.
+
+Visual Studio 2017 cannot handle neither .NET Core 2.2 or newer nor Unified .NET (­>=5.0).
+Visual Studio 2019 supports .NET Core 2.2, 3.0 and 3.1 and Unified .NET 5.0.x (no 6.0 or later).
+Visual Studio 2022 dropped support for .NET Framework 4.0 and 4.5.x but added support for .NET 6.0.x .
+
+.NET Framework 2.0 also covers 3.0 and 3.5 as they use the same JIT and only .NET Framework 2.0
+features are used (i.e. no WPF, no LINQ). .NET Framework 4.0 uses another JIT and is here for
+Windows Server 2003 (a legacy-only scenario). .NET Framework 4.6 enables support of Windows 
+Vista/Server 2008 up to Windows 10 and its server variants. Its 64-bit version includes RyuJIT
+which generates better machine code for CPU-intensive tasks. As no extra functionality of newer
+.NET Framework is used, newer .NET Framework versions will not be targeted (they will use the 
+DLL for .NET Framework 4.6)
+
+.NET Core 1.x cannot be supported because it lacks the needed System.Drawing.Common.
+.NET Core 2.1 and 3.1 are the ones supported because they had longer support periods.
+However, for the Windows Forms test project, as far .NET Core is concerned, only versions
+3.x have the System.Windows.Forms assembly.
+.NET Standard does not make much sense in this project because of operating system support
+(read below).
+
+For Unified .NET, only 5.0 (because it was the first) and even versions (as there are LTS)
+will be supported. However, targets will be added only if specific functionality is added.
+
+Operating system support
+------------------------
+For runtime support, I decided to keep it Windows only. The supplied DLLs are Windows-only
+and porting of GDI+ to other operating systems has been abandoned. If you want WebP support
+for Mac and Linux, use SkiaSharp, which has some Microsoft backing and built-in WebP support.
+Well, SkiaSharp is also available on Windows, so use this wrapper library for Windows-only
+legacy scenarios. For new projects, I would rather go with SkiaSharp anyway, because Microsoft
+broke the original (proprietary) GDI+ implementation in most recent Windows versions.
+
+And because of the above, neither Xamarin nor Mono support will be provided. SkiaSharp also
+works on Xamarin, by the way.
+
+So why still support Visual Studio for Mac then? Because you should not be locked in to
+a platform to read and inspect source code.
+
+You are also welcome to submit a pull request for additional ports.

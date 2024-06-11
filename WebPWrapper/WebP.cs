@@ -22,9 +22,8 @@
 // float[] PictureDistortion(Bitmap source, Bitmap reference, DistorsionMetric metricType) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO : throw more specific exceptions according to context (throw new Exception("Too short message"); is not informative)
-// TODO : make multi-targeting SDK projects
-// TODO : abstract Bitmap-like objects, so on macOS, Linux, iOS and Android we can use alternatives to GDI+
 // TODO : make NuGet package
+// NOTE : For non-Windows targets, use SkiaSharp as an alternative to GDI+ which has built-in WebP support.
 using System;
 using System.ComponentModel;
 using System.Drawing;
